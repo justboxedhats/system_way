@@ -263,10 +263,9 @@ class squares:
 
     def draw_text(self, text, x, y, color=(0, 0, 0)):
         if self.text != "":
-            text_surface = basic_font.render(text, True, color,(100,100,100,0),int(self.width))
+            text_surface = basic_font.render(text, True, color,None,int(self.width))
             screen.blit(text_surface, (x, y))
-        else:
-            print("no text to use")
+            
     def add_code (self):
         if self.code == "":
             print("There was no code to use")
@@ -395,7 +394,7 @@ while run_loop:
         #add node
         if button(per2pix(35),per2pix(95,screen.get_height()),per2pix(3),per2pix(3),"new node",(20,130,100),(255,255,255)):
             print(max(x for x in list(nodes_dic.keys()) if isinstance(x,int)))
-            nodes_dic[max(x for x in list(nodes_dic.keys()) if isinstance(x,int))+1]={"type":"node","x":240,"y":0,"width":100,"hight":100,"color":(94,130,211),"text":"","text_color":(0,0,0)}
+            nodes_dic[max(x for x in list(nodes_dic.keys()) if isinstance(x,int))+1]={"type":"node","x":240,"y":0,"width":100,"hight":100,"color":(94,130,211),"text":"","text_color":(0,0,0),"dragable":"True"}
             square_clear()
             load_squares(nodes_dic)
         #add lines
