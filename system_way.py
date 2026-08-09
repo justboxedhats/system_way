@@ -31,10 +31,10 @@ settings={
 }
 pan_speed= settings["pan_speed"]
 tool_bg_x= settings["tool_bg_x"]
-nodes_dic = {1: {"type":"node","text": "get bread","x":100,"y":100, "width":100,"hight":100, "color": (255, 200, 200),"text_color":(0,0,0),"dragable":"True"},
+nodes_dic = {1: {"type":"node","text": "get bread","x":100,"y":100, "width":100,"hight":100, "color": (255, 200, 200),"text_color":(0,0,0),"dragable":"True","set_sellectable":"True"},
              2: {"type":"node","text": "get jam and then get the knife that will be used to evenly spread the jam ontop of the bread/toast(yay)","x":300,"y":200, "width":100,"hight":100, "color": (200, 255, 200),"text_color":(0,0,0),"dragable":"True"},
-             3: {"type":"node","text": "toast","x":500,"y":400, "width":100,"hight":100,  "color": (200, 200, 255),"text_color":(0,0,0),"dragable":"True"},
-             4: {"type":"node","text": "image","x":600,"y":200, "width":100,"hight":100,  "color": (140, 200, 255),"text_color":(0,0,0),"dragable":"True"},
+             3: {"type":"node","text": "toast","x":500,"y":400, "width":100,"hight":100,  "color": (200, 200, 255),"text_color":(0,0,0),"dragable":"True","set_sellectable":"True"},
+             4: {"type":"node","text": "image","x":600,"y":200, "width":100,"hight":100,  "color": (140, 200, 255),"text_color":(0,0,0),"dragable":"True","set_sellectable":"True"},
             } 
 
 connection_dic = {1: [2], 2: [3]}
@@ -106,13 +106,16 @@ def load_squares(dic={}):
             squ[square_id_dic[list(square_id_dic.keys())[I]]].x+=camera_x
             squ[square_id_dic[list(square_id_dic.keys())[I]]].y+=camera_y
             """#dragable
+            
             if "dragable" in square_id_dic[list(square_id_dic.keys())[I]] :
                 squ[list(square_id_dic.keys())[I]].dragable=square_id_dic[list(square_id_dic.keys())[I]]["dragable"]
+            if "default" in square_id_dic[list(square_id_dic.keys())[I]] :
+                 squ[list(square_id_dic.keys())[I]].dragable=square_id_dic[list(square_id_dic.keys())[I]]["defalt"]
 
         if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="code_node":
             squ[list(square_id_dic.keys())[I]].text=square_id_dic[list(square_id_dic.keys())[I]]["text"]
             squ[list(square_id_dic.keys())[I]].text_color=square_id_dic[list(square_id_dic.keys())[I]]["text_color"]
-            
+        
 
             # dragable
             # Code
@@ -137,11 +140,22 @@ def render_squares ():
         if squ[list(squ.keys())[I]].type == "node":
             squ[list(squ.keys())[I]].draw()
             squ[list(squ.keys())[I]].draw_text(squ[list(squ.keys())[I]].text, squ[list(squ.keys())[I]].x+camera_x, squ[list(squ.keys())[I]].y+camera_y, squ[list(squ.keys())[I]].text_color)
+            try:
+                if if squ[list(squ.keys())[I]].defalt== "true":
+                    #renders dragable
+                    squ[list(squ.keys())[I]].set_dragable(list(squ.keys())[I])
+                    #runs selectable 
+                    
+                    #runs 
+                
+            except:
+                pass
             try :
                 if squ[list(squ.keys())[I]].dragable == "True":
                     squ[list(squ.keys())[I]].set_dragable(list(squ.keys())[I])
             except:
                 pass
+            
 
         if squ[list(squ.keys())[I]].type == "code_node":
             squ[list(squ.keys())[I]].draw()
@@ -237,13 +251,18 @@ class squares:
             self.rect=pygame.Rect((self.x, self.y, self.width, self.height))
 
     def set_dragable(self,name):
+        global selected_node
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_pressed()[0]:
-            #while pygame.mouse.get_pressed()[0]:
-                self.x = mouse_x - self.width / 2
-                self.y = mouse_y - self.height / 2
-                nodes_dic[name]["x"]=self.x
-                nodes_dic[name]["y"]=self.y
+        
+        if self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_pressed()[0] and selected_node[0]=="":
+            selected_node[0]=self
+        if self in selected_node and pygame.mouse.get_pressed()[0]:
+            self.x = mouse_x - self.width / 2
+            self.y = mouse_y - self.height / 2
+            nodes_dic[name]["x"]=self.x
+            nodes_dic[name]["y"]=self.y
+        elif pygame.mouse.get_pressed()[0] !=True: 
+            selected_node[0]=""
 
     """def draw_outline(self, name):
         global selected_node
@@ -256,8 +275,8 @@ class squares:
         global selected_node
         mouse_x, mouse_y = pygame.mouse.get_pos()
         if self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0]:        
-            selected_node.insert(0,self)
-            del selected_node[2]
+            selected_node.insert(1,self)
+            del selected_node[3]
             print(f"seleted nodes: {selected_node}")
 
 
@@ -399,7 +418,12 @@ while run_loop:
             load_squares(nodes_dic)
         #add lines
         if button(per2pix(41),per2pix(95,screen.get_height()),per2pix(3),per2pix(3),"new line",(60,100,140),(255,255,255)):
-            pass
+            selected_node=[]
+            print("please select two nodes")
+            if len(selected_node) >= 3:
+                if selected_node[1]!="" and selected 
+                node_connections[selected_node[1]].append(selected_node[2])
+                selected_node=[]
         #add text
         if button(per2pix(47),per2pix(95,screen.get_height()),per2pix(3),per2pix(3),"text",(130,104,50),(255,255,255)):
             pass
