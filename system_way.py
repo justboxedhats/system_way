@@ -5,21 +5,26 @@ from tkinter import *
 from tkinter import filedialog
 pygame.init()
 clock=pygame.time.Clock()
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((800, 600),pygame.RESIZABLE)
 pygame.display.set_caption("System Way")
 run_loop = True
 frame_rate=30
 # varrables
+file_name="test_board"
+board_save={}# a save state of the board
+save_filepath=""
 square_count=0
 square_id_dic={}
 squ={}
 image_list={}
 flags = ["home"]
 bg_color=(0,0,0)
+basic_font = pygame.font.SysFont("Arial", 20)
 selected_node=["","",""]
 current_tool=""
 scroll={"images":0,"code":0}
-basic_font = pygame.font.SysFont("Arial", 20)
+mouse_scroll=0
+scroll_speed=1
 text_offset_x=0
 text_offset_y=-20
 camera_x=0
@@ -39,7 +44,8 @@ nodes_dic = {1: {"type":"node","text": "get bread","x":100,"y":100, "width":100,
             } 
 
 connection_dic = {1: [2], 2: [3]}
-# fuctions
+
+# -------------    Fuctions
 
 def open_exp():
     filepath = filedialog.askopenfilename()
@@ -48,29 +54,58 @@ def open_exp():
     except:
         print("error acored when attempting to retrive file")
         file=""
-    if file == "":
-        print("empty string")
-        return "error"
-    else:
-        return file
+    return file
 
-def save_board(file_path):
+def open_path():
+    try:
+        filepath= filedialog.askdirectory()
+    except:
+            print("error acored when calling filepath")
+            filepath=""
+    if filepath == "":
+            print("empty string")
+            return ""
+    else:
+            return filepath
+
+
+
+def save_board():    
+    global board_save ,nodes_dic,settings,connection_dic
+
     board_save={}
+    board_save["nodes_dic"]=nodes_dic
     board_save["settings"]=settings
     board_save["connection_dic"]= connection_dic
-    board_save["nodes_dic"]=nodes_dic
-    return save_board
+        
+    print(f" saved new board: ")
+    print(board_save)
+    return board_save
 
-def export_board ( ):
-    save_board
-    with open(file_path,'wb') as file:
-    	pickle.dump(board_save,file)
-		
+def export_board ():
+    global save_filepath
+    global board_save
+    global file_name
+    if os.path.isfile(save_filepath) :
+        with open(save_filepath,'wb') as file:
+            pickle.dump(board_save, file)
+    else:
+        print(f" save path: {save_filepath}")
+        with open(f"{save_filepath}\{file_name}.pkl","wb") as new_file :
+            pickle.dump(board_save,new_file)
+        save_filepath=f"{save_filepath}\{file_name}.pkl"
+        with open(save_filepath,'wb') as file:
+            pickle.dump(board_save, file)
 
 
-
-def per2pix(percent,whole=screen.get_width()):
-    return int( (percent / 100) * whole)
+def per2pix(percent,whole="s_w"):
+    m_whole=whole
+    if whole == "s_w":
+        m_whole=screen.get_width()
+    elif whole == "s_h":
+        m_whole = screen.get_height()
+    
+    return int( (percent / 100) * m_whole)
 
 def button(x, y, width, height, text, color=(0, 0, 0), text_color=(255, 255, 255)):
     pygame.draw.rect(screen, color, (x, y, width, height))
@@ -83,8 +118,10 @@ def draw_line(x1, y1, x2, y2, color=(0, 0, 0), width=1):
     pygame.draw.line(screen, color, (x1, y1), (x2, y2), width)
 
 def draw_text(text, x, y, color=(0, 0, 0)):
+    basic_font = pygame.font.SysFont("Arial", 20*zoom)
     text_surface = basic_font.render(text, True, color)
     screen.blit(text_surface, (x, y))
+
 def load_squares(dic={}):
     square_id_dic=dic
     for I in range(len(square_id_dic)):
@@ -102,8 +139,10 @@ def load_squares(dic={}):
         if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="node":
             squ[list(square_id_dic.keys())[I]].text=square_id_dic[list(square_id_dic.keys())[I]]["text"]
             squ[list(square_id_dic.keys())[I]].text_color=square_id_dic[list(square_id_dic.keys())[I]]["text_color"]
+
             if "dragable" in square_id_dic[list(square_id_dic.keys())[I]] :
                 squ[list(square_id_dic.keys())[I]].dragable=square_id_dic[list(square_id_dic.keys())[I]]["dragable"]
+            
             if "sellectable" in square_id_dic[list(square_id_dic.keys())[I]] :
                 squ[list(square_id_dic.keys())[I]].sellectable=square_id_dic[list(square_id_dic.keys())[I]]["sellectable"]
 
@@ -147,7 +186,7 @@ def render_squares ():
                 if squ[list(squ.keys())[I]].sellectable== "True":
                     squ[list(squ.keys())[I]].set_sellectable()      
             except:pass
-            try :
+            try : 
                 if squ[list(squ.keys())[I]].dragable == "True":
                     squ[list(squ.keys())[I]].set_dragable(list(squ.keys())[I])
             except:pass
@@ -196,7 +235,7 @@ def load_connections():
             end_center_x = end_x + end_width / 2
             end_center_y = end_y + end_height / 2
 
-            draw_line(start_center_x, start_center_y, end_center_x, end_center_y, color=(0, 0, 0), width=2)
+            draw_line(start_center_x, start_center_y, end_center_x, end_center_y, color=(180, 220, 210), width=5)
 #type, x, y,width,hight,color . text,text_color. dragable. code. image
 class squares:
     def __init__(self,name,type="visual", x=100, y=100, width=20, height=20, color=(0, 0, 0),text="", text_color=(0, 0, 0), font_size=20, image="", code=""):
@@ -214,15 +253,16 @@ class squares:
         self.text_color = text_color
         self.font_size = font_size
         self.type = type
-        
-    def __delete__(self, instance):
+    
+    def __del__(self):
+        global square_count
         square_count -=1
-        print("deleted square")
+        #print("deleted  square")
     def draw(self):
         global selected_node
 
         if  "node" in self.type : 
-            self.m_rect=(self.x+camera_x, self.y+camera_y, self.width*zoom, self.height*zoom)
+            self.m_rect=(self.x+camera_x, self.y+camera_y, int(self.width*zoom), int(self.height*zoom))
             pygame.draw.rect(screen,self.color, self.m_rect,border_radius=int(self.width/30))
             self.rect=pygame.Rect((self.x, self.y, self.width, self.height)) 
             if self in selected_node :
@@ -231,6 +271,7 @@ class squares:
             else:
                 pygame.draw.rect(screen, (50, 80, 90), self.m_rect, width=4)
                 #draws the basic outline
+
         else:
             #print(f" color: {self.color} , x: {self.x} , y: {self.y} , width: {self.width} , x: {self.height}")
             pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height), border_radius=int(self.width/30))
@@ -259,9 +300,7 @@ class squares:
             selected_node.insert(1,self)
             del selected_node[3]
         elif self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and self in selected_node:
-            print("attempted to remove select")
-            #print()
-            del selected_node[self]
+            selected_node[selected_node.index(self)] =""
 
     def re_resize (self): #needs work, no fundimential
         pygame.rect
@@ -291,30 +330,42 @@ class squares:
 #"image_bg":{"type":"","x":,"y","width","hight","color","text","text_color"}
  #type, x, y,width,hight,color . text,text_color. dragable. code. image
 home_rec_list={
-    "tital":{"type":"text","x":per2pix(2),"y":10,"width":per2pix(50),"hight":70,"color":(170,190,160,100),"text":"System Way","text_color":(200, 140, 160,120) },
-    "ver_bg":{"type":"text","x":10,"y":80,"width":100,"hight":30,"color":(160, 180, 150),"text":"ver 1.0 (beta)","text_color":(220, 160, 180)},
-    "option_bg":{"type":"visual","x":0,"y":160,"width":140,"hight":400,"color":(150, 170, 140)},
-    "image_bg":{"type":"visual","x":per2pix(55),"y":per2pix(2,screen.get_height()),"width":per2pix(40),"hight":per2pix(90,screen.get_height()),"color":(200, 220, 190)}
+    "tital":{"type":"text","x":per2pix(2),"y":10,"width":per2pix(50),"hight":70,"color":(170,190,160,100),"text":"System Way","text_color":(150, 90, 110) },
+    "ver_bg":{"type":"text","x":per2pix(2),"y":80,"width":per2pix(15),"hight":30,"color":(160, 180, 150),"text":"ver 1.0 (beta)","text_color":(150, 90, 110)},
+    "intro_bg":{"type":"text","x":per2pix(3),"y":per2pix(22,"s_h"),"width":per2pix(46),"hight":per2pix(25,"s_h") ,"color":(150, 170, 140),"text":"hello, wellcome to system way, a program disigned to help you develop systems and diagrams. ","text_color":(200, 210,255)},
+    "option_bg":{"type":"visual","x":per2pix(3),"y":per2pix(53,"s_h"),"width":per2pix(46),"hight":per2pix(50,"s_h") ,"color":(150, 170, 140)},
+    "image_bg":{"type":"visual","x":per2pix(55),"y":per2pix(2,"s_h"),"width":per2pix(40),"hight":per2pix(90,"s_h"),"color":(200, 220, 190)},
+    "img_text_bg":{"type":"text","x":per2pix(55),"y":per2pix(2,"s_h"),"width":per2pix(40),"hight":per2pix(6,"s_h"),"color":(160, 180, 150),"text":"list of images","text_color":(150, 90, 110)}
+
     }
 load_squares(home_rec_list)
 render_squares()
 
-nodes_dic["tool_bar_bg"]={"type":"visual", "x":per2pix(35),"y":per2pix(94,screen.get_height()),"width":per2pix(50),"hight":per2pix(7,screen.get_height()),"color":(120,200,180)}
+nodes_dic["tool_bar_bg"]={"type":"visual", "x":per2pix(35),"y":per2pix(94,"s_h"),"width":per2pix(50),"hight":per2pix(7,"s_h"),"color":(120,200,180)}
 
 while run_loop:
+
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run_loop = False
+        if event.type == pygame.MOUSEWHEEL:
+            mouse_scroll=event.y
+            print(event.y)
+        else:
+            mouse_scroll=0
+
+
     #print(square_count)
     if flags[-1] == "home": #--************
-        screen.fill((215, 225, 200))
+        screen.fill((215, 225, 200)) 
 
         render_squares()
 
-        if button(10, 170, 120, 90, "load", (103, 100, 100), (255, 255, 255)):
-
+        if button(per2pix(4), per2pix(55,"s_h"), per2pix(44),per2pix(10,"s_h") , "load", (103, 100, 100), (255, 255, 255)):
+            draw_text("loading file explorer...",per2pix(50), per2pix(50,"s_h"))
             file_path = open_exp() #'text_files/list_recall.pkl'
-            if file_path == "error":  
+            if file_path == "":  
                 print("error detected")
             else:
                 file_path = file_path.name
@@ -324,17 +375,21 @@ while run_loop:
                 print("detected save file")
                 with open( file_path, "rb") as file:
                     board_save=pickle.load(file)
-                    print(board_save)
-                    #assining dictionaries 
-                    nodes_dic=board_save["nodes_dic"]
-                    connection_dic=board_save["connection_dic"]
-                    settings=board_save["settings"]
-                    pan_speed= settings["pan_speed"]
-                    tool_bg_x= settings["tool_bg_x"]
+                print(board_save)
+                #assining dictionaries 
+                nodes_dic=board_save["nodes_dic"]
+                connection_dic=board_save["connection_dic"]
+                settings=board_save["settings"]
+                pan_speed= settings["pan_speed"]
+                tool_bg_x= settings["tool_bg_x"]
 
                 flags.clear()
+                bg_color=(100,100,100)
                 flags.append("workspace")
-        if button(10, 300, 120, 90, "Workspace", (140, 100, 100), (255, 255, 255)):
+                square_clear()
+                load_squares(nodes_dic)
+
+        if button(per2pix(4), per2pix(67,"s_h"), per2pix(44), per2pix(10,"s_h"), "Workspace", (140, 100, 100), (255, 255, 255)):
             print(square_count)
             flags.clear()
             bg_color=(100,100,100)
@@ -342,11 +397,11 @@ while run_loop:
             square_clear()
             load_squares(nodes_dic)
 
-        if button(10, 450, 120, 40, "Settings", (150, 100, 100), (255, 255, 255)):
+        if button(per2pix(4), per2pix(79, "s_h"), per2pix(44), per2pix(7,"s_h"), "Settings", (150, 100, 100), (255, 255, 255)):
             flags.clear()
             flags.append("settings")
             
-        if button(10, 500, 120, 40, "quit", (160, 100, 100), (255, 255, 255)):
+        if button(per2pix(4), per2pix(88, "s_h"), per2pix(44), per2pix(7,"s_h"), "quit", (160, 100, 100), (255, 255, 255)):
                     run_loop = False
         
 
@@ -390,22 +445,24 @@ while run_loop:
         if keys[pygame.K_RIGHT]:
             camera_x += pan_speed
             print("keypress detected")
-        #if  mouse scroll up :
-        # zoom+=1
-        #if mouse scrool ip :
-        # zoom-=1
-
+        if mouse_scroll ==1 :
+         zoom+=1*scroll_speed
+         mouse_scroll=0
+        if mouse_scroll ==-1 :
+         zoom-=1*scroll_speed
+         mouse_scroll=0
         #----------user tools 
 
         #add node
-        if button(per2pix(35),per2pix(95,screen.get_height()),per2pix(3),per2pix(3),"new node",(20,130,100),(255,255,255)):
+        if button(per2pix(35),per2pix(95,"s_h"),per2pix(3),per2pix(3),"new node",(20,130,100),(255,255,255)):
             print(max(x for x in list(nodes_dic.keys()) if isinstance(x,int)))
 
             nodes_dic[max(x for x in list(nodes_dic.keys()) if isinstance(x,int))+1]={"type":"node","x":240,"y":0,"width":100,"hight":100,"color":(94,130,211),"text":"","text_color":(0,0,0),"defualt":"True"}
             square_clear()
             load_squares(nodes_dic)
+
         #add lines
-        if button(per2pix(41),per2pix(95,screen.get_height()),per2pix(3),per2pix(3),"new line",(60,100,140),(255,255,255)):
+        if button(per2pix(41),per2pix(95,"s_h"),per2pix(3),per2pix(3),"new line",(60,100,140),(255,255,255)):
             selected_node=["","",""]
             current_tool="add line"
         if selected_node[1]!="" and selected_node[2] !="" and current_tool == "add line":
@@ -419,9 +476,9 @@ while run_loop:
             bg_color=(100,100,100)
         elif current_tool=="add line":
             bg_color=(60,70,100)
-            draw_text("please select 2 nodes",per2pix(40),per2pix(1,screen.get_height()),(255,255,255))
+            draw_text("please select 2 nodes to add link",per2pix(40),per2pix(1,"s_h"),(255,255,255))
 
-        if button(per2pix(48),per2pix(95,screen.get_height()),per2pix(3),per2pix(3),"remove line",(140,100,60),(255,255,255)):
+        if button(per2pix(48),per2pix(95,"s_h"),per2pix(3),per2pix(3),"remove line",(140,100,60),(255,255,255)):
             selected_node=["","",""]
             current_tool="remove line"
 
@@ -445,17 +502,17 @@ while run_loop:
                 bg_color=(100,100,100)
         elif current_tool=="remove line":
                     bg_color=(100,70,60)
-                    draw_text("please select 2 nodes",per2pix(40),per2pix(1,screen.get_height()),(255,255,255))
-            
+                    draw_text("please select 2 nodes to remove link",per2pix(40),per2pix(1,"s_h"),(255,255,255))
             
                 
-
         #add text
-        if button(per2pix(54),per2pix(95,screen.get_height()),per2pix(3),per2pix(3),"text",(130,104,50),(255,255,255)):
+        if button(per2pix(54),per2pix(95,"s_h"),per2pix(3),per2pix(3),"text",(130,104,50),(255,255,255)):
             pass
+
         #add images 
-        if button(per2pix(61),per2pix(95,screen.get_height()),per2pix(3),per2pix(3),"image",(190,210,40),(255,255,255)):
-            pass
+        if button(per2pix(61),per2pix(95,"s_h"),per2pix(3),per2pix(3),"image",(190,210,40),(255,255,255)):
+            selected_node=["","",""]
+            current_tool="add image"
 
         if "code" in flags:
             if button(10, 20, 70, 20, "images", (0, 0, 0), (255, 255, 255)):
@@ -478,18 +535,16 @@ while run_loop:
                 square_clear()
                 load_squares(nodes_dic)   
                 
-
-
         elif "images" in flags:
             
-                #load images
+                #load images 
 
             if image_list != "":
                 for I in range(len(image_list)):
                     #image_rect=pygame.rect(20,250*I, 100,200 )
                     screen.blits(image_list[I], (20,250*I+scroll["images"]))                   
             else:
-                draw_text("no images in board",20,per2pix(95,screen.get_height()),(190,160,150))
+                draw_text("no images in board",20,per2pix(50,"s_h"),(190,160,150))
                 # loading ui buttions
 
             if button(10, 20, 180, 20, "images", (110, 180, 170), (255, 255, 255)):
@@ -499,7 +554,7 @@ while run_loop:
                 flags.remove("images")
                 flags.insert(0, "code")
                 print("Code button clicked, changed flags")      
-            if button(10,per2pix(95,screen.get_height()), 200,per2pix(3), "import",(90,160,150),(0,0,0)):
+            if button(10,per2pix(95,"s_h"), 200,per2pix(3), "import",(90,160,150),(0,0,0)):
                 file=open_exp()
                 image_file=pygame.image.load(file.name).convert_alpha
                 print(f" file: {file}  and image : {image_file}")
@@ -508,6 +563,7 @@ while run_loop:
                 """if selected_node != "":
                     nodes_dic[selected_node][type]= "image"          
                     print(f"added image to node : {selected_node}")"""
+                
             if "code_bg" in list(nodes_dic.keys()):
                 nodes_dic.pop("code_bg")
                 nodes_dic["image_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (180, 190, 210)}
@@ -538,17 +594,38 @@ while run_loop:
 
         if button(per2pix(90),10,50,3,"export",(100,100,100),(225,225,225)):
             print("pressed the import buttion ")
-            filepath = filedialog.askdirectory()
-            print(filepath)     
-            save_board(filepath)
-        if button(per2pix(80),10,50,3,"save",(100,100,100),(225,225,225)):
-            pass
-            #if save_filepath
-            #board_save()
-        # Checks for mouse drag or click
-    #print(f"seleted nodes: {selected_node}")
-
+            if file_name == "":
+                # file_name = allow the user to add a name
+                pass
             
+            filepath = filedialog.askdirectory()
+            print(filepath)
+            export_board()
+            
+        if button(per2pix(80),10,50,3,"save",(100,100,100),(225,225,225)):
+
+            if save_filepath == "":
+                    save_filepath=open_path()
+            elif file_name == "" :
+                #runs system to have the user type 
+                #file_name=
+                pass
+
+            if save_filepath != "":
+                save_board()
+                export_board()
+
+            print(f"attempted to create file")
+        if pygame.mouse.get_just_pressed() and "clicked" not in  flags:
+            p_mouse_pos=pygame.mouse.get_pos()
+            flags.append("mouse_pan")
+            print("now using mouse pos")
+        elif pygame.mouse.get_pressed() and "mouse_pan" in flags:
+            pass
+
+    #---------print zone 
+    #print(f"seleted nodes: {selected_node}")
+    #print(f" screen_x: {screen.get_width()}  screen_y: {screen.get_height()}")
             
 
 
