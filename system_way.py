@@ -4,6 +4,7 @@ import os
 from tkinter import *
 from tkinter import filedialog
 pygame.init()
+pygame.font.init()
 clock=pygame.time.Clock()
 screen = pygame.display.set_mode((800, 600),pygame.RESIZABLE)
 pygame.display.set_caption("System Way")
@@ -69,7 +70,6 @@ def open_path():
             return filepath
 
 
-
 def save_board():    
     global board_save ,nodes_dic,settings,connection_dic
 
@@ -97,6 +97,23 @@ def export_board ():
         with open(save_filepath,'wb') as file:
             pickle.dump(board_save, file)
 
+def fonts_li (str="df"): #why wont it define the function!!!
+        # basic_font = pygame.font.SysFont("Arial", 20)
+    print("loading font fuction")
+    if str == "df":
+        return pygame.font.SysFont("Arial", 20)
+    elif str == "t1" :
+        return pygame.font.SysFont("Arial", 50, True ,False)
+    elif str == "t2" :
+        return pygame.font.SysFont("Arial", 50, True ,False)
+    elif str == "t3" :
+        return pygame.font.SysFont("Arial", 50, True ,False)
+    elif str == "sp1" :
+        return pygame.font.SysFont("Arial", 50, True ,False)
+    elif str == "sp2" :
+        return pygame.font.SysFont("Arial", 50, True ,False)
+    else:
+        print(f" {str} not in libary ")
 
 def per2pix(percent,whole="s_w"):
     m_whole=whole
@@ -107,12 +124,16 @@ def per2pix(percent,whole="s_w"):
     
     return int( (percent / 100) * m_whole)
 
-def button(x, y, width, height, text, color=(0, 0, 0), text_color=(255, 255, 255)):
+def button(x, y, width, height, text, color=(0, 0, 0), text_color=(255, 255, 255),font=fonts_li("df")):
     pygame.draw.rect(screen, color, (x, y, width, height))
-    text_surface = basic_font.render(text, True, text_color)
+    text_surface = font.render(text, True, text_color)
     text_rect = text_surface.get_rect(center=(x + width / 2, y + height / 2))
     screen.blit(text_surface, text_rect)
-    return text_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_just_pressed()[0]
+    if text_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_just_pressed()[0]:
+        if "clicked" not in flags: 
+            flags.append("clicked")
+        return True
+    else: return False
 
 def draw_line(x1, y1, x2, y2, color=(0, 0, 0), width=1):
     pygame.draw.line(screen, color, (x1, y1), (x2, y2), width)
@@ -121,6 +142,7 @@ def draw_text(text, x, y, color=(0, 0, 0)):
     basic_font = pygame.font.SysFont("Arial", 20*zoom)
     text_surface = basic_font.render(text, True, color)
     screen.blit(text_surface, (x, y))
+
 
 def load_squares(dic={}):
     square_id_dic=dic
@@ -146,17 +168,20 @@ def load_squares(dic={}):
             if "sellectable" in square_id_dic[list(square_id_dic.keys())[I]] :
                 squ[list(square_id_dic.keys())[I]].sellectable=square_id_dic[list(square_id_dic.keys())[I]]["sellectable"]
 
-            if "defualt" in square_id_dic[list(square_id_dic.keys())[I]] : # dragable,sellectable
+            if "defualt" in square_id_dic[list(square_id_dic.keys())[I]] : # dragable,sellectable,click_b,
                 square_id_dic[list(square_id_dic.keys())[I]]["dragable"]="True"
                 square_id_dic[list(square_id_dic.keys())[I]]["sellectable"]="True"
+                #square_id_dic[list(square_id_dic.keys())[I]]["click_b"]="True"
+
                 squ[list(square_id_dic.keys())[I]].dragable=square_id_dic[list(square_id_dic.keys())[I]]["dragable"]
                 squ[list(square_id_dic.keys())[I]].sellectable=square_id_dic[list(square_id_dic.keys())[I]]["sellectable"]
+                #squ[list(square_id_dic.keys())[I]].click_b=square_id_dic[list(square_id_dic.keys())[I]]["click_b"]
+                
 
         if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="code_node":
             squ[list(square_id_dic.keys())[I]].text=square_id_dic[list(square_id_dic.keys())[I]]["text"]
             squ[list(square_id_dic.keys())[I]].text_color=square_id_dic[list(square_id_dic.keys())[I]]["text_color"]
         
-
             # dragable
             # Code
 
@@ -167,6 +192,9 @@ def load_squares(dic={}):
         
             # dragable
             # image
+
+        #squ[list(square_id_dic.keys())[I]].click_b=square_id_dic[list(square_id_dic.keys())[I]]["click_b"]
+        
     #print(squ)
 
 def render_squares ():
@@ -190,7 +218,11 @@ def render_squares ():
                 if squ[list(squ.keys())[I]].dragable == "True":
                     squ[list(squ.keys())[I]].set_dragable(list(squ.keys())[I])
             except:pass
-
+            try : 
+                if squ[list(squ.keys())[I]].click_b == "True":
+                    squ[list(squ.keys())[I]].click_b()
+            except:pass
+            
         if squ[list(squ.keys())[I]].type == "code_node":
             squ[list(squ.keys())[I]].draw()
             squ[list(squ.keys())[I]].draw_text(squ[list(squ.keys())[I]].text,squ[list(squ.keys())[I]].x+camera_x,squ[list(squ.keys())[I]].y+camera_y, squ[list(squ.keys())[I]].text_color)
@@ -201,6 +233,8 @@ def render_squares ():
             squ[list(squ.keys())[I]].draw_text(squ[list(squ.keys())[I]].text,squ[list(squ.keys())[I]].x+camera_x,squ[list(squ.keys())[I]].y+camera_y-per2pix(.7,squ[list(squ.keys())[I]].height),squ[list(squ.keys())[I]].text_color)
             #self.add_image()
             #self.dragrable()
+
+        squ[list(squ.keys())[I]].click_b()        
 
 def square_clear():
         global squ
@@ -236,9 +270,10 @@ def load_connections():
             end_center_y = end_y + end_height / 2
 
             draw_line(start_center_x, start_center_y, end_center_x, end_center_y, color=(180, 220, 210), width=5)
+
 #type, x, y,width,hight,color . text,text_color. dragable. code. image
 class squares:
-    def __init__(self,name,type="visual", x=100, y=100, width=20, height=20, color=(0, 0, 0),text="", text_color=(0, 0, 0), font_size=20, image="", code=""):
+    def __init__(self,name,type="visual", x=100, y=100, width=20, height=20, color=(0, 0, 0),text="", text_color=(0, 0, 0), image="", code=""):
         global square_count
         square_count+=1
         self.name=name
@@ -251,13 +286,13 @@ class squares:
         self.color = color
         self.text = text
         self.text_color = text_color
-        self.font_size = font_size
         self.type = type
     
     def __del__(self):
         global square_count
         square_count -=1
         #print("deleted  square")
+
     def draw(self):
         global selected_node
 
@@ -302,14 +337,16 @@ class squares:
         elif self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and self in selected_node:
             selected_node[selected_node.index(self)] =""
 
-    def re_resize (self): #needs work, no fundimential
-        pygame.rect
-        self.width=self.rect[0]
-        self.hight=self.rect[1]
+    def click_b (self) :
+        mouse_pos=pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_pos[0],mouse_pos[1]) and pygame.mouse.get_just_pressed()[0] and "clicked" not in flags :
+            flags.append("clicked")
+            print(f"flages: {flags}") 
 
-    def draw_text(self, text, x, y, color=(0, 0, 0)):
+
+    def draw_text(self, text, x, y, color=(0, 0, 0),font=fonts_li("df")):
         if self.text != "":
-            text_surface = basic_font.render(text, True, color,None,int(self.width))
+            text_surface = font.render(text, True, color,None,int(self.width))
             screen.blit(text_surface, (x, y))
             
     def add_code (self):
@@ -326,6 +363,15 @@ class squares:
         else:
             print(self.image)
             screen.blit(self.image,(self.x,self.y))
+
+    def re_resize (self): #needs work, no fundimential
+        # image, text, and code + offset 
+
+        
+        pygame.rect
+
+        self.width=self.rect[0]
+        self.hight=self.rect[1]
 
 #"image_bg":{"type":"","x":,"y","width","hight","color","text","text_color"}
  #type, x, y,width,hight,color . text,text_color. dragable. code. image
@@ -349,15 +395,15 @@ while run_loop:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run_loop = False
-        if event.type == pygame.MOUSEWHEEL:
+        """if event.type == pygame.MOUSEWHEEL:
             mouse_scroll=event.y
             print(event.y)
         else:
-            mouse_scroll=0
+            mouse_scroll=0"""
 
 
     #print(square_count)
-    if flags[-1] == "home": #--************
+    if "home" in flags: #--************
         screen.fill((215, 225, 200)) 
 
         render_squares()
@@ -405,7 +451,7 @@ while run_loop:
                     run_loop = False
         
 
-    if flags[-1] == "load": #--************
+    if "load" in flags: #--************
         screen.fill((200, 200, 200))
         draw_text("Load", 10, 10, (0, 0, 0))
         if button(10, 10, 100, 30, "Home", (100, 100, 100), (255, 255, 255)) or pygame.mouse.get_just_pressed()[1]:
@@ -418,7 +464,7 @@ while run_loop:
             flags.clear()
             flags.append("home")
     
-    if flags[-1] == "workspace":      #--************
+    if  "workspace" in flags:      #--************
         screen.fill(bg_color)
         draw_text("Workspace", 5, 0, (0, 0, 0))
         if pygame.mouse.get_just_pressed()[1]:
@@ -451,6 +497,7 @@ while run_loop:
         if mouse_scroll ==-1 :
          zoom-=1*scroll_speed
          mouse_scroll=0
+         
         #----------user tools 
 
         #add node
@@ -504,7 +551,7 @@ while run_loop:
                     bg_color=(100,70,60)
                     draw_text("please select 2 nodes to remove link",per2pix(40),per2pix(1,"s_h"),(255,255,255))
             
-                
+            
         #add text
         if button(per2pix(54),per2pix(95,"s_h"),per2pix(3),per2pix(3),"text",(130,104,50),(255,255,255)):
             pass
@@ -609,6 +656,7 @@ while run_loop:
             elif file_name == "" :
                 #runs system to have the user type 
                 #file_name=
+
                 pass
 
             if save_filepath != "":
@@ -616,17 +664,40 @@ while run_loop:
                 export_board()
 
             print(f"attempted to create file")
-        if pygame.mouse.get_just_pressed() and "clicked" not in  flags:
+
+            # mouse pan system
+        if pygame.mouse.get_just_pressed()[0]  and "clicked" not in  flags and "mouse_pan" not in flags:
             p_mouse_pos=pygame.mouse.get_pos()
             flags.append("mouse_pan")
             print("now using mouse pos")
-        elif pygame.mouse.get_pressed() and "mouse_pan" in flags:
-            pass
+
+            o_camera_x=camera_x
+            o_camera_y=camera_y
+
+        elif pygame.mouse.get_pressed()[0]  and "mouse_pan" in flags:
+            c_mouse_pos= pygame.mouse.get_pos()
+            #print(f" current:  {c_mouse_pos}  past:  {p_mouse_pos}" )
+
+            camera_x = o_camera_x+ -1*(p_mouse_pos[0]-c_mouse_pos[0])
+            camera_y = o_camera_y + -1*(p_mouse_pos[1]-c_mouse_pos[1])
+
+            #print(f"x :  {-1(p_mouse_pos[0]-c_mouse_pos[0])} y: {-1(p_mouse_pos[1]-c_mouse_pos[1])} ")
+
+
+        elif pygame.mouse.get_pressed()[0] ==False and "mouse_pan" in flags:
+            flags.remove("mouse_pan")
+            print("removed mouse_pan from flags")
+
+        elif pygame.mouse.get_pressed()[0] ==False and "clicked" in flags:
+            flags.remove("clicked")
+            print("removed clicked from flags")
 
     #---------print zone 
     #print(f"seleted nodes: {selected_node}")
     #print(f" screen_x: {screen.get_width()}  screen_y: {screen.get_height()}")
-            
+    #print (flags)
+    #print(f" pressing: {pygame.mouse.get_pressed()}  j_press: {pygame.mouse.get_just_pressed()}")
+
 
 
     clock.tick(frame_rate)
