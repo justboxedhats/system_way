@@ -19,11 +19,13 @@ square_id_dic={}
 squ={}
 node_offset=5
 image_list={}
+image_display_of=0
 flags = ["home"]
 bg_color=(0,0,0)
 basic_font = pygame.font.SysFont("Arial", 20)
 selected_node=["","",""]
 current_tool=""
+user_type="" #user text imputs
 scroll={"images":0,"code":0}
 mouse_scroll=0
 scroll_speed=1
@@ -125,9 +127,10 @@ def per2pix(percent,whole="s_w"):
     
     return int( (percent / 100) * m_whole)
 
-def button(x, y, width, height, text, color=(0, 0, 0), text_color=(255, 255, 255),font=fonts_li("df")):
+def button(x, y, width, height, text, color=(0, 0, 0), text_color=(255, 255, 255),font="df"):
+    n_font=fonts_li(font)
     pygame.draw.rect(screen, color, (x, y, width, height))
-    text_surface = font.render(text, True, text_color)
+    text_surface = n_font.render(text, True, text_color)
     text_rect = text_surface.get_rect(center=(x + width / 2, y + height / 2))
     screen.blit(text_surface, text_rect)
     if text_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_just_pressed()[0]:
@@ -139,8 +142,10 @@ def button(x, y, width, height, text, color=(0, 0, 0), text_color=(255, 255, 255
 def draw_line(x1, y1, x2, y2, color=(0, 0, 0), width=1):
     pygame.draw.line(screen, color, (x1, y1), (x2, y2), width)
 
-def draw_text(text, x, y, color=(0, 0, 0),font=fonts_li("df")):
-    text_surface = font.render(text, True, color)
+def draw_text(text, x, y, color=(0, 0, 0),font="df"):
+    #print(f"font: {font}") 
+    n_font=fonts_li(font)
+    text_surface = n_font.render(text, True, color)
     screen.blit(text_surface, (x, y))
 
 def load_squares(dic={}):
@@ -403,7 +408,6 @@ class squares:
         self.hight=rect_sum.height + node_offset
         print(f"x: { rect_sum.width }   y: { rect_sum.height } x_n:{self.width}   y_n:{self.height} ")
         self.rect=pygame.Rect((self.x, self.y, self.width, self.height)) 
-        
 
 
 #"image_bg":{"type":"","x":,"y","width","hight","color","text","text_color"}
@@ -421,10 +425,11 @@ load_squares(home_rec_list)
 render_squares()
 
 nodes_dic["tool_bar_bg"]={"type":"visual", "x":per2pix(35),"y":per2pix(94,"s_h"),"width":per2pix(50),"hight":per2pix(7,"s_h"),"color":(120,200,180)}
+flags.append("typing")
 
 while run_loop:
 
-
+    print(user_type)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run_loop = False
@@ -433,13 +438,24 @@ while run_loop:
             print(event.y)
         else:
             mouse_scroll=0"""
-
+        if event.type == pygame.KEYDOWN and "typing" in flags:
+            if event.key == pygame.K_KP_ENTER:
+                flags.pop("typing")
+                flags.append("fin_typing")
+            elif event.key == pygame.K_BACKSPACE:
+                user_type = user_type[:-1]
+            else:
+                user_type += event.unicode
+            
 
     #print(square_count)
     if "home" in flags: #--************
         screen.fill((215, 225, 200)) 
 
         render_squares()
+        
+        if image_list == {}: 
+            draw_text("currenty without images",per2pix(57),per2pix(50,"s_h"),(102,30,50),"t3")
 
         if button(per2pix(4), per2pix(55,"s_h"), per2pix(44),per2pix(10,"s_h") , "load", (103, 100, 100), (255, 255, 255)):
             draw_text("loading file explorer...",per2pix(50), per2pix(50,"s_h"))
@@ -467,6 +483,11 @@ while run_loop:
                 flags.append("workspace")
                 square_clear()
                 load_squares(nodes_dic)
+        
+        if button(per2pix(55), per2pix(92,"s_h"), per2pix(40), per2pix(5,"s_h"), "import image", (140, 100, 100), (255, 255, 255)):
+            
+            print("pressed buttion for image importation ") 
+
 
         if button(per2pix(4), per2pix(67,"s_h"), per2pix(44), per2pix(10,"s_h"), "Workspace", (140, 100, 100), (255, 255, 255)):
             print(square_count)
@@ -481,7 +502,8 @@ while run_loop:
             flags.append("settings")
             
         if button(per2pix(4), per2pix(88, "s_h"), per2pix(44), per2pix(7,"s_h"), "quit", (160, 100, 100), (255, 255, 255)):
-                    run_loop = False
+            run_loop = False
+
         
 
     if "load" in flags: #--************
@@ -499,7 +521,14 @@ while run_loop:
     
     if  "workspace" in flags:      #--************
         screen.fill(bg_color)
-        draw_text("Workspace", 5, 0, (0, 0, 0))
+        if button(per2pix(0), per2pix(0,"s_h"),per2pix(5),per2pix(3,"s_h"), "back", (204,34,244),(244,145,243)):
+            square_clear()
+            load_squares(home_rec_list)
+            
+            flags.clear()
+            flags.append("home")
+
+        #draw_text("Workspace", 5, 0, (0, 0, 0))
         if pygame.mouse.get_just_pressed()[1]:
             square_clear()
             load_squares(home_rec_list)
@@ -617,30 +646,29 @@ while run_loop:
             draw_text("coding tab still in development", per2pix(2), per2pix(40,"s_h"),(210,210,130))
                 
         elif "images" in flags:
-            
-                #load images 
 
-            if image_list != "":
-                for I in range(len(image_list)):
-                    #image_rect=pygame.rect(20,250*I, 100,200 )
-                    screen.blits(image_list[I], (20,250*I+scroll["images"]))                   
-            else:
-                draw_text("no images in board",20,per2pix(50,"s_h"),(190,160,150))
-                # loading ui buttions
-
+                            # loading ui buttions 
             if button(10, 20, 180, 20, "images", (110, 180, 170), (255, 255, 255)):
                 flags.remove("images")
                 print("images button clicked, changed flags")
+
             if button(190, 20, 70, 20, "Code", (0, 0, 0), (255, 255, 255)):
                 flags.remove("images")
                 flags.insert(0, "code")
                 print("Code button clicked, changed flags")      
-            if button(10,per2pix(95,"s_h"), 200,per2pix(3), "import",(90,160,150),(0,0,0)):
+
+                                        # button for importing images ----
+
+            if button(10,per2pix(95,"s_h"), 200,per2pix(3), "import",(90,160,150),(0,0,0)): 
                 file=open_exp()
-                image_file=pygame.image.load(file.name).convert_alpha
+                #print(f"extend? :    {pygame.image.get_extended()}")
+
+                image_file=pygame.image.load(file.name,".png")#.convert_alpha
+                image_file= image_file.convert_alpha()
                 print(f" file: {file}  and image : {image_file}")
                 image_list[len(image_list)]= image_file
                 print(f"image list: {image_list}")
+
                 """if selected_node != "":
                     nodes_dic[selected_node][type]= "image"          
                     print(f"added image to node : {selected_node}")"""
@@ -651,14 +679,42 @@ while run_loop:
                 square_clear()
                 load_squares(nodes_dic)
                 print("added image bg 1 ")
-
             else:
                 print("added image bg 2 ")
                 nodes_dic["image_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (180, 190, 210)}
                 square_clear()
                 load_squares(nodes_dic)
-        
-        else:
+
+                    # load images arrows
+
+                    #adding arrows for the scrolling of images 
+            if button(per2pix(2),per2pix( 12,"s_h"),per2pix(2),per2pix( 10,"s_h"),"^",(100,180,150),(120,200,121),"t3"):
+                image_display_of +=1
+            
+                                    #load images 
+            if image_list != {}:
+                selected_list=[]
+                img_dis_limit= 300%screen.get_height() # need to work on img limit and arrow buttons
+                print(img_dis_limit)
+                if len(image_list) <= img_dis_limit :
+                    selected_list=image_list
+                else:
+                    for i in range(img_dis_limit):
+                        print(i)
+                        selected_list.append(image_list[int(i+image_display_of)])
+                for I in range(len(selected_list)):
+
+                    #print(image_list[I])
+                    image=pygame.transform.scale(selected_list[I],(100,100))                    
+                    screen.blit(image,(per2pix(6),120*I+per2pix(9,"s_h")))  #+scroll["images"] 
+
+
+            else:
+                #because this text is added before the bg, it does not show up :(
+                draw_text("no images in board",per2pix(2),per2pix(50,"s_h"),(0,0,0),"t3")#(190,160,150)
+
+    
+        else: #when neather of the tabs are selected
             if button(10, 20, tool_bg_x/2, 20, "images", (0, 0, 0), (255, 255, 255)):
                 flags.insert(0,"images")
                 print("images button clicked, changed flags")
@@ -674,7 +730,7 @@ while run_loop:
                 square_clear()
                 load_squares(nodes_dic)
 
-        if button(per2pix(90),10,50,3,"export",(100,100,100),(225,225,225)):
+        """if button(per2pix(90),10,50,3,"export",(100,100,100),(225,225,225)):
             print("pressed the import buttion ")
             if file_name == "":
                 # file_name = allow the user to add a name
@@ -682,7 +738,7 @@ while run_loop:
             
             filepath = filedialog.askdirectory()
             print(filepath)
-            export_board()
+            export_board()"""
             
         if button(per2pix(80),10,50,3,"save",(100,100,100),(225,225,225)):
 
@@ -721,11 +777,11 @@ while run_loop:
 
         elif pygame.mouse.get_pressed()[0] ==False and "mouse_pan" in flags:
             flags.remove("mouse_pan")
-            print("removed mouse_pan from flags")
+            #print("removed mouse_pan from flags")
 
         elif pygame.mouse.get_pressed()[0] ==False and "clicked" in flags:
             flags.remove("clicked")
-            print("removed clicked from flags")
+            #print("removed clicked from flags")
 
     #---------print zone 
     #print(f"seleted nodes: {selected_node}")
