@@ -17,6 +17,7 @@ save_filepath=""
 square_count=0
 square_id_dic={}
 squ={}
+node_offset=5
 image_list={}
 flags = ["home"]
 bg_color=(0,0,0)
@@ -99,17 +100,17 @@ def export_board ():
 
 def fonts_li (str="df"): #why wont it define the function!!!
         # basic_font = pygame.font.SysFont("Arial", 20)
-    print("loading font fuction")
+    #print("loading font fuction")
     if str == "df":
         return pygame.font.SysFont("Arial", 20)
     elif str == "t1" :
-        return pygame.font.SysFont("Arial", 50, True ,False)
+        return pygame.font.SysFont("Arial", 65, True ,False)
     elif str == "t2" :
         return pygame.font.SysFont("Arial", 50, True ,False)
     elif str == "t3" :
-        return pygame.font.SysFont("Arial", 50, True ,False)
+        return pygame.font.SysFont("Arial", 30, True ,False)
     elif str == "sp1" :
-        return pygame.font.SysFont("Arial", 50, True ,False)
+        return pygame.font.SysFont("Arial", 25, True ,False)
     elif str == "sp2" :
         return pygame.font.SysFont("Arial", 50, True ,False)
     else:
@@ -138,11 +139,9 @@ def button(x, y, width, height, text, color=(0, 0, 0), text_color=(255, 255, 255
 def draw_line(x1, y1, x2, y2, color=(0, 0, 0), width=1):
     pygame.draw.line(screen, color, (x1, y1), (x2, y2), width)
 
-def draw_text(text, x, y, color=(0, 0, 0)):
-    basic_font = pygame.font.SysFont("Arial", 20*zoom)
-    text_surface = basic_font.render(text, True, color)
+def draw_text(text, x, y, color=(0, 0, 0),font=fonts_li("df")):
+    text_surface = font.render(text, True, color)
     screen.blit(text_surface, (x, y))
-
 
 def load_squares(dic={}):
     square_id_dic=dic
@@ -157,10 +156,21 @@ def load_squares(dic={}):
         if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="text":
             squ[list(square_id_dic.keys())[I]].text=square_id_dic[list(square_id_dic.keys())[I]]["text"]
             squ[list(square_id_dic.keys())[I]].text_color=square_id_dic[list(square_id_dic.keys())[I]]["text_color"]
+            if "font" in square_id_dic[list(square_id_dic.keys())[I]] :
+                squ[list(square_id_dic.keys())[I]].font=square_id_dic[list(square_id_dic.keys())[I]]["font"]
+            else: 
+                square_id_dic[list(square_id_dic.keys())[I]]["font"]="df"
+                squ[list(square_id_dic.keys())[I]].font=square_id_dic[list(square_id_dic.keys())[I]]["font"]
         
         if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="node":
             squ[list(square_id_dic.keys())[I]].text=square_id_dic[list(square_id_dic.keys())[I]]["text"]
             squ[list(square_id_dic.keys())[I]].text_color=square_id_dic[list(square_id_dic.keys())[I]]["text_color"]
+            
+            if "font" in square_id_dic[list(square_id_dic.keys())[I]] :
+                squ[list(square_id_dic.keys())[I]].font=square_id_dic[list(square_id_dic.keys())[I]]["font"]
+            else: 
+                square_id_dic[list(square_id_dic.keys())[I]]["font"]="df"
+                squ[list(square_id_dic.keys())[I]].font=square_id_dic[list(square_id_dic.keys())[I]]["font"]
 
             if "dragable" in square_id_dic[list(square_id_dic.keys())[I]] :
                 squ[list(square_id_dic.keys())[I]].dragable=square_id_dic[list(square_id_dic.keys())[I]]["dragable"]
@@ -171,11 +181,11 @@ def load_squares(dic={}):
             if "defualt" in square_id_dic[list(square_id_dic.keys())[I]] : # dragable,sellectable,click_b,
                 square_id_dic[list(square_id_dic.keys())[I]]["dragable"]="True"
                 square_id_dic[list(square_id_dic.keys())[I]]["sellectable"]="True"
-                #square_id_dic[list(square_id_dic.keys())[I]]["click_b"]="True"
+                square_id_dic[list(square_id_dic.keys())[I]]["re_resize"]="True"
 
                 squ[list(square_id_dic.keys())[I]].dragable=square_id_dic[list(square_id_dic.keys())[I]]["dragable"]
                 squ[list(square_id_dic.keys())[I]].sellectable=square_id_dic[list(square_id_dic.keys())[I]]["sellectable"]
-                #squ[list(square_id_dic.keys())[I]].click_b=square_id_dic[list(square_id_dic.keys())[I]]["click_b"]
+                squ[list(square_id_dic.keys())[I]].re_resize=square_id_dic[list(square_id_dic.keys())[I]]["re_resize"]
                 
 
         if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="code_node":
@@ -205,11 +215,11 @@ def render_squares ():
 
         if squ[list(squ.keys())[I]].type == "text":
             squ[list(squ.keys())[I]].draw()
-            squ[list(squ.keys())[I]].draw_text(squ[list(squ.keys())[I]].text, squ[list(squ.keys())[I]].x, squ[list(squ.keys())[I]].y, squ[list(squ.keys())[I]].text_color)
+            squ[list(squ.keys())[I]].draw_text(squ[list(squ.keys())[I]].text, squ[list(squ.keys())[I]].x, squ[list(squ.keys())[I]].y, squ[list(squ.keys())[I]].text_color,squ[list(squ.keys())[I]].font)
 
         if squ[list(squ.keys())[I]].type == "node":
             squ[list(squ.keys())[I]].draw()
-            squ[list(squ.keys())[I]].draw_text(squ[list(squ.keys())[I]].text, squ[list(squ.keys())[I]].x+camera_x, squ[list(squ.keys())[I]].y+camera_y, squ[list(squ.keys())[I]].text_color)
+            squ[list(squ.keys())[I]].draw_text(squ[list(squ.keys())[I]].text, squ[list(squ.keys())[I]].x+camera_x, squ[list(squ.keys())[I]].y+camera_y, squ[list(squ.keys())[I]].text_color,squ[list(squ.keys())[I]].font)
             try:
                 if squ[list(squ.keys())[I]].sellectable== "True":
                     squ[list(squ.keys())[I]].set_sellectable()      
@@ -219,10 +229,10 @@ def render_squares ():
                     squ[list(squ.keys())[I]].set_dragable(list(squ.keys())[I])
             except:pass
             try : 
-                if squ[list(squ.keys())[I]].click_b == "True":
-                    squ[list(squ.keys())[I]].click_b()
+                if squ[list(squ.keys())[I]].re_resize == "True":
+                    squ[list(squ.keys())[I]].set_re_resize ()
             except:pass
-            
+
         if squ[list(squ.keys())[I]].type == "code_node":
             squ[list(squ.keys())[I]].draw()
             squ[list(squ.keys())[I]].draw_text(squ[list(squ.keys())[I]].text,squ[list(squ.keys())[I]].x+camera_x,squ[list(squ.keys())[I]].y+camera_y, squ[list(squ.keys())[I]].text_color)
@@ -242,7 +252,6 @@ def square_clear():
         del squ
         selected_node=["","",""]
         squ={}
-
 
 def load_connections(): 
     for node_id, connected_nodes in connection_dic.items():
@@ -303,6 +312,7 @@ class squares:
             if self in selected_node :
                 pygame.draw.rect(screen, (200, 200, 200), self.m_rect, width=4)
                 #draws the pale outline
+
             else:
                 pygame.draw.rect(screen, (50, 80, 90), self.m_rect, width=4)
                 #draws the basic outline
@@ -323,7 +333,7 @@ class squares:
             self.y = mouse_y - self.height / 2
             nodes_dic[name]["x"]=self.x
             nodes_dic[name]["y"]=self.y
-            
+
         elif self == selected_node[0] and pygame.mouse.get_pressed()[0] !=True: 
             #selected_node[1]=selected_node[0]
             selected_node[0]=""
@@ -343,10 +353,11 @@ class squares:
             flags.append("clicked")
             print(f"flages: {flags}") 
 
-
-    def draw_text(self, text, x, y, color=(0, 0, 0),font=fonts_li("df")):
+    def draw_text(self, text, x, y, color=(0, 0, 0),font="df"):
+        n_font=fonts_li(font)                                       #print(f"N_F: {n_font}  O_F: {font}")
         if self.text != "":
-            text_surface = font.render(text, True, color,None,int(self.width))
+            text_surface = n_font.render(text, True, color,None,int(self.width))
+            self.text_surf= text_surface # resize function
             screen.blit(text_surface, (x, y))
             
     def add_code (self):
@@ -364,24 +375,46 @@ class squares:
             print(self.image)
             screen.blit(self.image,(self.x,self.y))
 
-    def re_resize (self): #needs work, no fundimential
+    def re_resizing (self): #needs work
         # image, text, and code + offset 
+        global node_offset
+        print("It tried to run this code")
+        rect_sum=""
+        rects= []
+        if self.type == "node" :
+            print("it reconised it's node type")
+            rects.append(self.rect)
+            rects.append(self.text_surf)
 
+        elif self.type == "code_node" :
+            print ("image node is still under work")
+            
+        elif self.type == "image_node" :
+            print ("image node is still under work")
+
+        else :
+            print ("hey, this is not a node... I think")
+
+        rect_sum=rects[0]
+        for I in rects[1:]:
+            rect_sum = rect_sum.union(I)
+
+        self.width=rect_sum.width + node_offset
+        self.hight=rect_sum.height + node_offset
+        print(f"x: { rect_sum.width }   y: { rect_sum.height } x_n:{self.width}   y_n:{self.height} ")
+        self.rect=pygame.Rect((self.x, self.y, self.width, self.height)) 
         
-        pygame.rect
 
-        self.width=self.rect[0]
-        self.hight=self.rect[1]
 
 #"image_bg":{"type":"","x":,"y","width","hight","color","text","text_color"}
  #type, x, y,width,hight,color . text,text_color. dragable. code. image
 home_rec_list={
-    "tital":{"type":"text","x":per2pix(2),"y":10,"width":per2pix(50),"hight":70,"color":(170,190,160,100),"text":"System Way","text_color":(150, 90, 110) },
-    "ver_bg":{"type":"text","x":per2pix(2),"y":80,"width":per2pix(15),"hight":30,"color":(160, 180, 150),"text":"ver 1.0 (beta)","text_color":(150, 90, 110)},
-    "intro_bg":{"type":"text","x":per2pix(3),"y":per2pix(22,"s_h"),"width":per2pix(46),"hight":per2pix(25,"s_h") ,"color":(150, 170, 140),"text":"hello, wellcome to system way, a program disigned to help you develop systems and diagrams. ","text_color":(200, 210,255)},
+    "tital":{"type":"text","x":per2pix(2),"y":8,"width":per2pix(45),"hight":70,"color":(170,190,160,100),"text":"System Way","text_color":(150, 90, 110), "font":"t1" },
+    "ver_bg":{"type":"text","x":per2pix(2),"y":80,"width":per2pix(20),"hight":30,"color":(160, 180, 150),"text":"ver 1.0 (beta)","text_color":(150, 90, 110), "font":"sp1"},
+    "intro_bg":{"type":"text","x":per2pix(3),"y":per2pix(22,"s_h"),"width":per2pix(46),"hight":per2pix(25,"s_h") ,"color":(150, 170, 140),"text":"  Hello, wellcome to system way, a program disigned to help you develop systems and diagrams. ","text_color":(200, 210,255),"font":"t3"},
     "option_bg":{"type":"visual","x":per2pix(3),"y":per2pix(53,"s_h"),"width":per2pix(46),"hight":per2pix(50,"s_h") ,"color":(150, 170, 140)},
     "image_bg":{"type":"visual","x":per2pix(55),"y":per2pix(2,"s_h"),"width":per2pix(40),"hight":per2pix(90,"s_h"),"color":(200, 220, 190)},
-    "img_text_bg":{"type":"text","x":per2pix(55),"y":per2pix(2,"s_h"),"width":per2pix(40),"hight":per2pix(6,"s_h"),"color":(160, 180, 150),"text":"list of images","text_color":(150, 90, 110)}
+    "img_text_bg":{"type":"text","x":per2pix(55),"y":per2pix(2,"s_h"),"width":per2pix(40),"hight":per2pix(6,"s_h"),"color":(160, 180, 150),"text":"list of images","text_color":(150, 90, 110),"font":"sp1"}
 
     }
 load_squares(home_rec_list)
@@ -577,10 +610,11 @@ while run_loop:
                 square_clear()
                 load_squares(nodes_dic)
             else:
-                nodes_dic["code_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (180, 190, 210)}
+                nodes_dic["code_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (10, 18, 12)}
                 print("added code bg 2 ")
                 square_clear()
                 load_squares(nodes_dic)   
+            draw_text("coding tab still in development", per2pix(2), per2pix(40,"s_h"),(210,210,130))
                 
         elif "images" in flags:
             
@@ -617,6 +651,7 @@ while run_loop:
                 square_clear()
                 load_squares(nodes_dic)
                 print("added image bg 1 ")
+
             else:
                 print("added image bg 2 ")
                 nodes_dic["image_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (180, 190, 210)}
