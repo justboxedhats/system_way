@@ -345,12 +345,14 @@ class squares:
         
     def set_sellectable(self) :
         global selected_node
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and self not in selected_node:        
-            selected_node.insert(1,self)
-            del selected_node[3]
-        elif self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and self in selected_node:
-            selected_node[selected_node.index(self)] =""
+        global flags
+        if "no_select" not in flags :
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            if self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and self not in selected_node:        
+                selected_node.insert(1,self)
+                del selected_node[3]
+            elif self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and self in selected_node:
+                selected_node[selected_node.index(self)] =""
 
     def click_b (self) :
         mouse_pos=pygame.mouse.get_pos()
@@ -568,7 +570,7 @@ while run_loop:
          
         #----------user tools 
 
-        #add node
+        #---add node
         if button(per2pix(40),per2pix(95,"s_h"),per2pix(3),per2pix(3),"new node",(20,130,100),(255,255,255)):
             print(max(x for x in list(nodes_dic.keys()) if isinstance(x,int)))
 
@@ -576,7 +578,7 @@ while run_loop:
             square_clear()
             load_squares(nodes_dic)
 
-        #add lines
+        #---add lines
         if button(per2pix(50),per2pix(95,"s_h"),per2pix(3),per2pix(3),"new line",(60,100,140),(255,255,255)):
             selected_node=["","",""]
             current_tool="add line"
@@ -626,22 +628,28 @@ while run_loop:
             selected_node=["","",""]
             current_tool="edit_text"
             flags.append("typing")
-            past_text=""
+            past_text=0
             
 
         if "typing" in flags and current_tool == "edit_text" and selected_node[1] != "":
-            print(f"node text vaule: {nodes_dic[selected_node[1].name]["text"]}")
-            if past_text == "":
+            #print(f"node text vaule: {nodes_dic[selected_node[1].name]["text"]}")
+            if "no_select" not in flags :
+                flags.append("no_select")
+            elif past_text == 0 :
                 past_text=nodes_dic[selected_node[1].name]["text"]
                 user_type=nodes_dic[selected_node[1].name]["text"]
 
+            #load a few instructions 
+            draw_text("start typing!",per2pix(35),per2pix(3,"s_h"),(50,130,60),"sp1")
+            draw_text("esc:cancel enter:finish",per2pix(35),per2pix(7,"s_h"),(50,130,60),"t3")
+
             bg_color=(180,180,100)
             nodes_dic[selected_node[1].name]["text"]=user_type
-            #square_clear()
-            #load_squares(nodes_dic)
+            squ={}
+            load_squares(nodes_dic)
+
 
         elif current_tool=="edit_text" : # before a node is selected 
-
             #print(f"selected node :  {selected_node}") 
             bg_color=(180,180,100)
             draw_text("please select a node.",per2pix(35),per2pix(5,"s_h"),(50,130,60),"t3")
@@ -649,19 +657,20 @@ while run_loop:
         if "fin_typing" in flags :
             print("finish_typing")
             user_type=""
-            past_text=""
+            past_text=0
             flags.remove("fin_typing")
+            flags.remove("no_select")
             current_tool=""
             bg_color=(100,100,100)
             square_clear()
             load_squares(nodes_dic)
 
-
         if "end_typing" in flags :
             print("end_typing")
             nodes_dic[selected_node[1].name]["text"]=past_text
-            past_text=""
+            past_text=0
             flags.remove("end_typing")
+            flags.remove("no_select")
             current_tool=""
             bg_color=(100,100,100)
             square_clear()
