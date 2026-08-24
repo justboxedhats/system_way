@@ -425,11 +425,10 @@ load_squares(home_rec_list)
 render_squares()
 
 nodes_dic["tool_bar_bg"]={"type":"visual", "x":per2pix(35),"y":per2pix(94,"s_h"),"width":per2pix(50),"hight":per2pix(7,"s_h"),"color":(120,200,180)}
-flags.append("typing")
+
 
 while run_loop:
 
-    print(user_type)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run_loop = False
@@ -439,13 +438,20 @@ while run_loop:
         else:
             mouse_scroll=0"""
         if event.type == pygame.KEYDOWN and "typing" in flags:
-            if event.key == pygame.K_KP_ENTER:
-                flags.pop("typing")
+            
+            if event.key == pygame.K_RETURN:
+                flags.remove("typing")
                 flags.append("fin_typing")
+            elif event.key == pygame.K_ESCAPE:
+                flags.remove("typing")
+                flags.append("end_typing")
             elif event.key == pygame.K_BACKSPACE:
                 user_type = user_type[:-1]
             else:
                 user_type += event.unicode
+
+            print(user_type)
+
             
 
     #print(square_count)
@@ -563,7 +569,7 @@ while run_loop:
         #----------user tools 
 
         #add node
-        if button(per2pix(35),per2pix(95,"s_h"),per2pix(3),per2pix(3),"new node",(20,130,100),(255,255,255)):
+        if button(per2pix(40),per2pix(95,"s_h"),per2pix(3),per2pix(3),"new node",(20,130,100),(255,255,255)):
             print(max(x for x in list(nodes_dic.keys()) if isinstance(x,int)))
 
             nodes_dic[max(x for x in list(nodes_dic.keys()) if isinstance(x,int))+1]={"type":"node","x":240,"y":0,"width":100,"hight":100,"color":(94,130,211),"text":"","text_color":(0,0,0),"defualt":"True"}
@@ -571,10 +577,11 @@ while run_loop:
             load_squares(nodes_dic)
 
         #add lines
-        if button(per2pix(41),per2pix(95,"s_h"),per2pix(3),per2pix(3),"new line",(60,100,140),(255,255,255)):
+        if button(per2pix(50),per2pix(95,"s_h"),per2pix(3),per2pix(3),"new line",(60,100,140),(255,255,255)):
             selected_node=["","",""]
             current_tool="add line"
         if selected_node[1]!="" and selected_node[2] !="" and current_tool == "add line":
+
             if selected_node[1].name not in connection_dic:
                     connection_dic[selected_node[1].name]=[]
             if selected_node[2].name in connection_dic[selected_node[1].name] :
@@ -587,7 +594,8 @@ while run_loop:
             bg_color=(60,70,100)
             draw_text("please select 2 nodes to add link",per2pix(40),per2pix(1,"s_h"),(255,255,255))
 
-        if button(per2pix(48),per2pix(95,"s_h"),per2pix(3),per2pix(3),"remove line",(140,100,60),(255,255,255)):
+            #-----------------Remove line
+        if button(per2pix(60),per2pix(95,"s_h"),per2pix(3),per2pix(3),"remove line",(140,100,60),(255,255,255)):
             selected_node=["","",""]
             current_tool="remove line"
 
@@ -612,16 +620,62 @@ while run_loop:
         elif current_tool=="remove line":
                     bg_color=(100,70,60)
                     draw_text("please select 2 nodes to remove link",per2pix(40),per2pix(1,"s_h"),(255,255,255))
-            
-            
-        #add text
-        if button(per2pix(54),per2pix(95,"s_h"),per2pix(3),per2pix(3),"text",(130,104,50),(255,255,255)):
-            pass
 
-        #add images 
-        if button(per2pix(61),per2pix(95,"s_h"),per2pix(3),per2pix(3),"image",(190,210,40),(255,255,255)):
+            #----------edit text 
+        if button(per2pix(70),per2pix(95,"s_h"),per2pix(3),per2pix(3),"text",(130,104,50),(255,255,255)):
+            selected_node=["","",""]
+            current_tool="edit_text"
+            flags.append("typing")
+            past_text=""
+            
+
+        if "typing" in flags and current_tool == "edit_text" and selected_node[1] != "":
+            print(f"node text vaule: {nodes_dic[selected_node[1].name]["text"]}")
+            if past_text == "":
+                past_text=nodes_dic[selected_node[1].name]["text"]
+                user_type=nodes_dic[selected_node[1].name]["text"]
+
+            bg_color=(180,180,100)
+            nodes_dic[selected_node[1].name]["text"]=user_type
+            #square_clear()
+            #load_squares(nodes_dic)
+
+        elif current_tool=="edit_text" : # before a node is selected 
+
+            #print(f"selected node :  {selected_node}") 
+            bg_color=(180,180,100)
+            draw_text("please select a node.",per2pix(35),per2pix(5,"s_h"),(50,130,60),"t3")
+
+        if "fin_typing" in flags :
+            print("finish_typing")
+            user_type=""
+            past_text=""
+            flags.remove("fin_typing")
+            current_tool=""
+            bg_color=(100,100,100)
+            square_clear()
+            load_squares(nodes_dic)
+
+
+        if "end_typing" in flags :
+            print("end_typing")
+            nodes_dic[selected_node[1].name]["text"]=past_text
+            past_text=""
+            flags.remove("end_typing")
+            current_tool=""
+            bg_color=(100,100,100)
+            square_clear()
+            load_squares(nodes_dic)
+
+            #---------add image
+        if button(per2pix(80),per2pix(95,"s_h"),per2pix(3),per2pix(3),"image",(190,210,40),(255,255,255)):
+            print(max(x for x in list(nodes_dic.keys()) if isinstance(x,int)))
             selected_node=["","",""]
             current_tool="add image"
+            nodes_dic[max(x for x in list(nodes_dic.keys()) if isinstance(x,int))+1]={"type":"node","x":240,"y":0,"width":100,"hight":100,"color":(94,130,211),"text":"","text_color":(0,0,0),"defualt":"True"}
+            square_clear()
+            load_squares(nodes_dic)
+
 
         if "code" in flags:
             if button(10, 20, 70, 20, "images", (0, 0, 0), (255, 255, 255)):
@@ -747,7 +801,6 @@ while run_loop:
             elif file_name == "" :
                 #runs system to have the user type 
                 #file_name=
-
                 pass
 
             if save_filepath != "":
