@@ -20,6 +20,7 @@ squ={}
 node_offset=5
 image_list={}
 image_display_of=0
+img_dis_limit= int(screen.get_height()/150)
 flags = ["home"]
 bg_color=(0,0,0)
 basic_font = pygame.font.SysFont("Arial", 20)
@@ -80,7 +81,10 @@ def save_board():
     board_save["nodes_dic"]=nodes_dic
     board_save["settings"]=settings
     board_save["connection_dic"]= connection_dic
-        
+    board_save["image_list"]= image_list
+    board_save["image_display_of"]= image_display_of
+
+
     print(f" saved new board: ")
     print(board_save)
     return board_save
@@ -158,6 +162,9 @@ def load_squares(dic={}):
         if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="visual":
             pass
 
+        if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="visual":
+            pass
+
         if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="text":
             squ[list(square_id_dic.keys())[I]].text=square_id_dic[list(square_id_dic.keys())[I]]["text"]
             squ[list(square_id_dic.keys())[I]].text_color=square_id_dic[list(square_id_dic.keys())[I]]["text_color"]
@@ -217,6 +224,11 @@ def render_squares ():
         #print(squ[list(squ.keys())[I]].type)
         if squ[list(squ.keys())[I]].type == "visual":
             squ[list(squ.keys())[I]].draw()
+
+        if squ[list(squ.keys())[I]].type == "s_visual":
+            squ[list(squ.keys())[I]].draw()
+            squ[list(squ.keys())[I]].set_sellectable()      
+
 
         if squ[list(squ.keys())[I]].type == "text":
             squ[list(squ.keys())[I]].draw()
@@ -310,51 +322,75 @@ class squares:
     def draw(self):
         global selected_node
 
-        if  "node" in self.type : 
-            self.m_rect=(self.x+camera_x, self.y+camera_y, int(self.width*zoom), int(self.height*zoom))
+        if  "node" in self.type or "s_visual" in self.type : 
+            #self.m_rect=pygame.Rect(self.x+camera_x, self.y+camera_y, int(self.width*zoom), int(self.height*zoom))
+            self.m
+            self.rect=pygame.Rect((self.x, self.y, self.width, self.height))
+            if  self.m_rect.x == self.rect.x :
+
+                self.x = self.x+ ((self.x+camera_x)-)     (mouse_x - self.width / 2) 
+            self.y = (mouse_y - self.height / 2) 
+            nodes_dic[name]["x"]=self.x  
+            nodes_dic[name]["y"]=self.y  
+            
             pygame.draw.rect(screen,self.color, self.m_rect,border_radius=int(self.width/30))
-            self.rect=pygame.Rect((self.x, self.y, self.width, self.height)) 
-            if self in selected_node :
-                pygame.draw.rect(screen, (200, 200, 200), self.m_rect, width=4)
+
+            #print(f" node m_rect:  {self.m_rect}")
+            #gen m_rect: {pygame.rect(self.x+camera_x, self.y+camera_y, self.width, self.height)}
+            print(f" node m_rect:  {self.m_rect}     ")
+
+            if "im_node" in self.type: # renders node images 
+                print("detected im_node") 
+ 
+            if self in selected_node :  
+                pygame.draw.rect(screen, (200, 200, 200), self.rect, width=4)
                 #draws the pale outline
 
             else:
-                pygame.draw.rect(screen, (50, 80, 90), self.m_rect, width=4)
+                pygame.draw.rect(screen, (50, 80, 90), self.rect, width=4)
                 #draws the basic outline
-
-        else:
-            #print(f" color: {self.color} , x: {self.x} , y: {self.y} , width: {self.width} , x: {self.height}")
+ 
+        else: 
+            #print(f" color: {sef.color} , x: {self.x} , y: {self.y} , width: {self.width} , x: {self.height}")
             pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height), border_radius=int(self.width/30))
             self.rect=pygame.Rect((self.x, self.y, self.width, self.height))
 
-    def set_dragable(self,name):
-        global selected_node
-        #print("started draging")
+    def set_dragable(self,name): 
+        # the first in selected node is for draging node
+        global selected_node 
+
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and selected_node[0]=="":
+        #node_rect=pygame.rect(self.x, self.y, int(self.width*zoom), int(self.height*zoom))
+        
+        if self.m_rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and selected_node[0]=="":  
             selected_node[0]=self
         if self == selected_node[0] and pygame.mouse.get_pressed()[0]:
-            self.x = mouse_x - self.width / 2
-            self.y = mouse_y - self.height / 2
-            nodes_dic[name]["x"]=self.x
-            nodes_dic[name]["y"]=self.y
+            self.x = (mouse_x - self.width / 2) 
+            self.y = (mouse_y - self.height / 2) 
+            nodes_dic[name]["x"]=self.x  
+            nodes_dic[name]["y"]=self.y # [name] should be changed to self.name
 
         elif self == selected_node[0] and pygame.mouse.get_pressed()[0] !=True: 
             #selected_node[1]=selected_node[0]
-            selected_node[0]=""
+            selected_node[0]="" 
         
     def set_sellectable(self) :
-        global selected_node
-        global flags
+        global selected_node 
+        global flags 
         if "no_select" not in flags :
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            if self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and self not in selected_node:        
-                selected_node.insert(1,self)
-                del selected_node[3]
-            elif self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and self in selected_node:
-                selected_node[selected_node.index(self)] =""
 
-    def click_b (self) :
+            #node_rect=pygame.rect(self.x+camera_x, self.y+camera_y, int(self.width*zoom), int(self.height*zoom))
+            print( f"test output: {self.m_rect.collidepoint(mouse_x,mouse_y)}")
+
+            if self.m_rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0]:
+                if  self not in selected_node:        
+                    selected_node.insert(1,self)
+                    del selected_node[3]
+                elif self in selected_node:
+                    selected_node[selected_node.index(self)] =""
+
+    def click_b (self) : 
         mouse_pos=pygame.mouse.get_pos()
         if self.rect.collidepoint(mouse_pos[0],mouse_pos[1]) and pygame.mouse.get_just_pressed()[0] and "clicked" not in flags :
             flags.append("clicked")
@@ -439,6 +475,13 @@ while run_loop:
             print(event.y)
         else:
             mouse_scroll=0"""
+        if event.type == pygame.KEYDOWN and "type_t_f" in flags:
+            if event.key == pygame.K_RETURN:
+                flags.remove("typing_t_f")
+                flags.append("press_true")
+            elif event.key == pygame.K_ESCAPE:
+                flags.remove("typing_t_f")
+                flags.append("press_false")
         if event.type == pygame.KEYDOWN and "typing" in flags:
             
             if event.key == pygame.K_RETURN:
@@ -461,10 +504,45 @@ while run_loop:
         screen.fill((215, 225, 200)) 
 
         render_squares()
-        
-        if image_list == {}: 
+
+        #         images in home screen
+        if image_list == {}:  
             draw_text("currenty without images",per2pix(57),per2pix(50,"s_h"),(102,30,50),"t3")
 
+        else: 
+            if image_list != [] and len(image_list) > img_dis_limit: # arrow check
+                if button(per2pix(78),per2pix( 12,"s_h"),per2pix(2),per2pix( 10,"s_h"),"^",(100,180,150),(120,200,121),"t3") and image_display_of !=0:
+                    image_display_of -=1 
+
+                # distroy last square 
+        
+                # /\ up   \/ down
+
+                if button(per2pix(78),per2pix( 82,"s_h"),per2pix(2),per2pix( 10,"s_h"),"v",(100,180,150),(120,200,121),"t3") and image_display_of+img_dis_limit !=len(image_list)-1 :
+                    print(f" image dis: {image_display_of+1}  pressed down img_len : {len(image_list)-1}   ")
+                    image_display_of +=1
+
+                    # distroy last square 
+
+            if image_list != {}:    # rendering the images 
+                selected_list=[] # images in list
+                img_dis_limit= int(screen.get_height()/150) # need to work on img limit and arrow buttons
+
+                if len(image_list) <= img_dis_limit : # defining selected images
+                    selected_list=image_list
+                else:
+                    for i in range(img_dis_limit):
+                        print(f" i : {i}  img_lim:  {img_dis_limit}  img_dis_of : {image_display_of}")
+                        selected_list.append(image_list[int(i+image_display_of)])
+                        
+                for I in range(len(selected_list)): # srinks and renders
+                    if selected_list[I].get_width()>100 or selected_list[I].get_height() > 100 :
+                        image=pygame.transform.scale(selected_list[I],(100,100))
+                    else: 
+                        image=selected_list[I]                    
+                    screen.blit(image,(per2pix(72),120*I+per2pix(9,"s_h")))  #+scroll["images"] 
+
+                # buttons for the home screen 
         if button(per2pix(4), per2pix(55,"s_h"), per2pix(44),per2pix(10,"s_h") , "load", (103, 100, 100), (255, 255, 255)):
             draw_text("loading file explorer...",per2pix(50), per2pix(50,"s_h"))
             file_path = open_exp() #'text_files/list_recall.pkl'
@@ -487,20 +565,30 @@ while run_loop:
                 tool_bg_x= settings["tool_bg_x"]
 
                 flags.clear()
-                bg_color=(100,100,100)
+                bg_color=(180,180,180)
                 flags.append("workspace")
                 square_clear()
                 load_squares(nodes_dic)
         
-        if button(per2pix(55), per2pix(92,"s_h"), per2pix(40), per2pix(5,"s_h"), "import image", (140, 100, 100), (255, 255, 255)):
-            
-            print("pressed buttion for image importation ") 
+
+
+        if button(per2pix(55), per2pix(92,"s_h"), per2pix(40), per2pix(5,"s_h"), "import image", (140, 100, 100), (255, 255, 255)):            
+            file=open_exp()
+            #print(f"extend? :    {pygame.image.get_extended()}")
+            if file != "":
+                image_file=pygame.image.load(file.name,".png")#.convert_alpha
+                image_file= image_file.convert_alpha()
+                print(f" file: {file}  and image : {image_file}")
+                image_list[len(image_list)]= image_file
+                print(f"image list: {image_list}")
+            else:
+                print("no image selected")
 
 
         if button(per2pix(4), per2pix(67,"s_h"), per2pix(44), per2pix(10,"s_h"), "Workspace", (140, 100, 100), (255, 255, 255)):
             print(square_count)
             flags.clear()
-            bg_color=(100,100,100)
+            bg_color=(190,190,180)
             flags.append("workspace")
             square_clear()
             load_squares(nodes_dic)
@@ -546,7 +634,7 @@ while run_loop:
 
         load_connections()
         render_squares()
-
+        print("new frame")
 
         keys=pygame.key.get_pressed()
         if keys[pygame.K_DOWN]:
@@ -629,35 +717,35 @@ while run_loop:
             current_tool="edit_text"
             flags.append("typing")
             past_text=0
-            
 
         if "typing" in flags and current_tool == "edit_text" and selected_node[1] != "":
-            #print(f"node text vaule: {nodes_dic[selected_node[1].name]["text"]}")
-            if "no_select" not in flags :
-                flags.append("no_select")
-            elif past_text == 0 :
-                past_text=nodes_dic[selected_node[1].name]["text"]
-                user_type=nodes_dic[selected_node[1].name]["text"]
+            print(f"node text vaule: {nodes_dic[selected_node[1].name]["text"]}")
+            if "no_select" not in flags : # prevents the selection of multiple nodes
+                flags.append("no_select")   
+            #elif
+            if past_text == 0 :   
+                past_text=nodes_dic[selected_node[1].name]["text"] # past text 
+                user_type=nodes_dic[selected_node[1].name]["text"] # current text 
 
-            #load a few instructions 
+            #load a instructions for user 
             draw_text("start typing!",per2pix(35),per2pix(3,"s_h"),(50,130,60),"sp1")
             draw_text("esc:cancel enter:finish",per2pix(35),per2pix(7,"s_h"),(50,130,60),"t3")
 
             bg_color=(180,180,100)
             nodes_dic[selected_node[1].name]["text"]=user_type
-            squ={}
+            squ={} 
             load_squares(nodes_dic)
 
 
-        elif current_tool=="edit_text" : # before a node is selected 
-            #print(f"selected node :  {selected_node}") 
+        elif current_tool=="edit_text" and selected_node[1] == "" : # before a node is selected 
+            print(f"selected node :  {selected_node}") 
             bg_color=(180,180,100)
             draw_text("please select a node.",per2pix(35),per2pix(5,"s_h"),(50,130,60),"t3")
 
         if "fin_typing" in flags :
             print("finish_typing")
             user_type=""
-            past_text=0
+            past_text=0   
             flags.remove("fin_typing")
             flags.remove("no_select")
             current_tool=""
@@ -676,16 +764,27 @@ while run_loop:
             square_clear()
             load_squares(nodes_dic)
 
-            #---------add image
+
+                        #---------add image
         if button(per2pix(80),per2pix(95,"s_h"),per2pix(3),per2pix(3),"image",(190,210,40),(255,255,255)):
             print(max(x for x in list(nodes_dic.keys()) if isinstance(x,int)))
-            selected_node=["","",""]
-            current_tool="add image"
+            selected_node=["","",""] 
+            current_tool="add image" 
             nodes_dic[max(x for x in list(nodes_dic.keys()) if isinstance(x,int))+1]={"type":"node","x":240,"y":0,"width":100,"hight":100,"color":(94,130,211),"text":"","text_color":(0,0,0),"defualt":"True"}
+
             square_clear()
             load_squares(nodes_dic)
+        if "add image" in flags  and selected_node == ["","",""] :
+            #bg_color == 
+            # print ( f" selected  lists:  {selected_node}" )
+            pass
 
+            
+        if "add image" in flags and selected_node != ["","",""] : 
+            #print ( f" selected  lists:  {selected_node}" )
 
+            pass
+                                # side pannel
         if "code" in flags:
             if button(10, 20, 70, 20, "images", (0, 0, 0), (255, 255, 255)):
                 flags.remove("code")
@@ -720,19 +819,20 @@ while run_loop:
                 flags.insert(0, "code")
                 print("Code button clicked, changed flags")      
 
-                                        # button for importing images ----
+                            # button for importing images ----
 
             if button(10,per2pix(95,"s_h"), 200,per2pix(3), "import",(90,160,150),(0,0,0)): 
                 file=open_exp()
                 #print(f"extend? :    {pygame.image.get_extended()}")
+                if file != "":
+                    image_file=pygame.image.load(file.name,".png")#.convert_alpha
+                    image_file= image_file.convert_alpha() 
+                    image_list[len(image_list)]= image_file
 
-                image_file=pygame.image.load(file.name,".png")#.convert_alpha
-                image_file= image_file.convert_alpha()
-                print(f" file: {file}  and image : {image_file}")
-                image_list[len(image_list)]= image_file
-                print(f"image list: {image_list}")
+                else:
+                    print("no image selected")
 
-                """if selected_node != "":
+                """if selected_node != "": 
                     nodes_dic[selected_node][type]= "image"          
                     print(f"added image to node : {selected_node}")"""
                 
@@ -741,41 +841,65 @@ while run_loop:
                 nodes_dic["image_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (180, 190, 210)}
                 square_clear()
                 load_squares(nodes_dic)
-                print("added image bg 1 ")
+                #print("added image bg 1 ")
             else:
-                print("added image bg 2 ")
+                #print("added image bg 2 ")
                 nodes_dic["image_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (180, 190, 210)}
                 square_clear()
                 load_squares(nodes_dic)
 
                     # load images arrows
 
-                    #adding arrows for the scrolling of images 
-            if button(per2pix(2),per2pix( 12,"s_h"),per2pix(2),per2pix( 10,"s_h"),"^",(100,180,150),(120,200,121),"t3"):
-                image_display_of +=1
-            
-                                    #load images 
-            if image_list != {}:
+            if image_list != [] and len(image_list) > img_dis_limit:
+                if button(per2pix(2),per2pix( 12,"s_h"),per2pix(2),per2pix( 10,"s_h"),"^",(100,180,150),(120,200,121),"t3") and image_display_of !=0:
+                    image_display_of -=1 
+
+                     # distroy last item in the list
+                    print(f"pre node_dic  {nodes_dic}")
+
+        
+                # /\ up   \/ down
+
+                if button(per2pix(2),per2pix( 82,"s_h"),per2pix(2),per2pix( 10,"s_h"),"v",(100,180,150),(120,200,121),"t3") and image_display_of+img_dis_limit !=len(image_list)-1 :
+                    print(f" image dis: {image_display_of+1}  pressed down img_len : {len(image_list)-1}   ")
+
+                    image_display_of +=1
+
+                    # distroy last item in the list
+                    print(f"pre node_dic  {nodes_dic}")
+                    #node_dic.remove()
+
+                                        #load images 
+
+            if image_list != {}: 
                 selected_list=[]
-                img_dis_limit= 300%screen.get_height() # need to work on img limit and arrow buttons
-                print(img_dis_limit)
-                if len(image_list) <= img_dis_limit :
+                img_dis_limit= int(screen.get_height()/150) # need to work on img limit and arrow buttons
+                #print(img_dis_limit)
+                if len(image_list) <= img_dis_limit : # defining selected images
                     selected_list=image_list
                 else:
                     for i in range(img_dis_limit):
-                        print(i)
+                        print(f" i : {i}  img_lim:  {img_dis_limit}  img_dis_of : {image_display_of}")
                         selected_list.append(image_list[int(i+image_display_of)])
+                        
                 for I in range(len(selected_list)):
+                    #print(image_list[I]) 
+                    if selected_list[I].get_width()>100 or selected_list[I].get_height() > 100 :
+                        image=pygame.transform.scale(selected_list[I],(100,100))
+        
+                    if selected_list[I] not in nodes_dic.keys():
+                        # adds image background
+                        print(f" pre node_dic: {nodes_dic}  input vaule : {str(selected_list[I])}")
+                        nodes_dic[str(selected_list[I])]={"type":"s_visual","x": per2pix(6)-(20/selected_list[I].get_width()) ,"y":120*I+per2pix(9,"s_h")-(20/selected_list[I].get_height()) , "width" : selected_list[I].get_width() +(4/selected_list[I].get_width()), "hight": selected_list[I].get_height() + (4/selected_list[I].get_height()), "color":(10,50,100,79) } 
+                        print(f" post edit node_dic {nodes_dic} ")
 
-                    #print(image_list[I])
-                    image=pygame.transform.scale(selected_list[I],(100,100))                    
-                    screen.blit(image,(per2pix(6),120*I+per2pix(9,"s_h")))  #+scroll["images"] 
+                        # options of squares: squares are added each frame
+                    screen.blit(selected_list[I],(per2pix(6),120*I+per2pix(9,"s_h")))  #+scroll["images"] 
 
 
             else:
-                #because this text is added before the bg, it does not show up :(
                 draw_text("no images in board",per2pix(2),per2pix(50,"s_h"),(0,0,0),"t3")#(190,160,150)
-
+            
     
         else: #when neather of the tabs are selected
             if button(10, 20, tool_bg_x/2, 20, "images", (0, 0, 0), (255, 255, 255)):
