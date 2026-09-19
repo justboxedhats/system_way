@@ -323,15 +323,24 @@ class squares:
         global selected_node
 
         if  "node" in self.type or "s_visual" in self.type : 
-            #self.m_rect=pygame.Rect(self.x+camera_x, self.y+camera_y, int(self.width*zoom), int(self.height*zoom))
-            self.m
-            self.rect=pygame.Rect((self.x, self.y, self.width, self.height))
-            if  self.m_rect.x == self.rect.x :
+            self.m_rect=pygame.Rect(self.x+camera_x, self.y+camera_y, int(self.width*zoom), int(self.height*zoom))
+            
+            self.rect=pygame.Rect((self.x+camera_x, self.y+camera_y, self.width, self.height))
+  
+            #if  self.m_rect.x != self.rect.x : 
 
-                self.x = self.x+ ((self.x+camera_x)-)     (mouse_x - self.width / 2) 
+
+            """  
+                #the goal is to make a single rect to rule all 
+                #this may require that you set the vaule for the node 
+                #to the vaule of camera x and y 
+                #The issue is that the value for rect can be set repeady
+                #this would cause it's position to move repeadlty 
+
+                self.x = self.x      (mouse_x - self.width / 2) 
             self.y = (mouse_y - self.height / 2) 
             nodes_dic[name]["x"]=self.x  
-            nodes_dic[name]["y"]=self.y  
+            nodes_dic[name]["y"]=self.y """
             
             pygame.draw.rect(screen,self.color, self.m_rect,border_radius=int(self.width/30))
 
