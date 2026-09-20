@@ -320,14 +320,16 @@ class squares:
         #print("deleted  square")
 
     def draw(self):
-        global selected_node
+        global selected_node ,nodes_dic
 
         if  "node" in self.type or "s_visual" in self.type : 
-            self.m_rect=pygame.Rect(self.x+camera_x, self.y+camera_y, int(self.width*zoom), int(self.height*zoom))
+            #self.m_rect=pygame.Rect(self.x+camera_x, self.y+camera_y, int(self.width*zoom), int(self.height*zoom))
             
             self.rect=pygame.Rect((self.x+camera_x, self.y+camera_y, self.width, self.height))
   
-            #if  self.m_rect.x != self.rect.x : 
+            if  self.rect.x != nodes_dic[self.name]["x"] and self.rect.y != nodes_dic[self.name]["y"] : 
+                nodes_dic[self.name]["x"]=self.x  
+                nodes_dic[self.name]["y"]=self.y 
 
 
             """  
@@ -336,17 +338,17 @@ class squares:
                 #to the vaule of camera x and y 
                 #The issue is that the value for rect can be set repeady
                 #this would cause it's position to move repeadlty 
-
+                
                 self.x = self.x      (mouse_x - self.width / 2) 
             self.y = (mouse_y - self.height / 2) 
-            nodes_dic[name]["x"]=self.x  
-            nodes_dic[name]["y"]=self.y """
+            nodes_dic[self.name]["x"]=self.x  
+            nodes_dic[self.name]["y"]=self.y """   
             
-            pygame.draw.rect(screen,self.color, self.m_rect,border_radius=int(self.width/30))
+            pygame.draw.rect(screen,self.color, self.rect,border_radius=int(self.width/30))
 
             #print(f" node m_rect:  {self.m_rect}")
             #gen m_rect: {pygame.rect(self.x+camera_x, self.y+camera_y, self.width, self.height)}
-            print(f" node m_rect:  {self.m_rect}     ")
+            print(f" node rect:  {self.rect}     ")
 
             if "im_node" in self.type: # renders node images 
                 print("detected im_node") 
@@ -364,24 +366,24 @@ class squares:
             pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height), border_radius=int(self.width/30))
             self.rect=pygame.Rect((self.x, self.y, self.width, self.height))
 
-    def set_dragable(self,name): 
+    def set_dragable(self,name):
         # the first in selected node is for draging node
-        global selected_node 
+        global selected_node  
 
-        mouse_x, mouse_y = pygame.mouse.get_pos()
+        mouse_x, mouse_y = pygame.mouse.get_pos() 
         #node_rect=pygame.rect(self.x, self.y, int(self.width*zoom), int(self.height*zoom))
         
-        if self.m_rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and selected_node[0]=="":  
+        if self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and selected_node[0]=="":  
             selected_node[0]=self
         if self == selected_node[0] and pygame.mouse.get_pressed()[0]:
-            self.x = (mouse_x - self.width / 2) 
-            self.y = (mouse_y - self.height / 2) 
-            nodes_dic[name]["x"]=self.x  
-            nodes_dic[name]["y"]=self.y # [name] should be changed to self.name
+            self.x = (mouse_x - self.width / 2) - camera_x
+            self.y = (mouse_y - self.height / 2) - camera_y
+            nodes_dic[self.name]["x"]=self.x  
+            nodes_dic[self.name]["y"]=self.y # [name] should be changed to self.name
 
         elif self == selected_node[0] and pygame.mouse.get_pressed()[0] !=True: 
             #selected_node[1]=selected_node[0]
-            selected_node[0]="" 
+            selected_node[0]=""  
         
     def set_sellectable(self) :
         global selected_node 
@@ -389,10 +391,10 @@ class squares:
         if "no_select" not in flags :
             mouse_x, mouse_y = pygame.mouse.get_pos()
 
-            #node_rect=pygame.rect(self.x+camera_x, self.y+camera_y, int(self.width*zoom), int(self.height*zoom))
-            print( f"test output: {self.m_rect.collidepoint(mouse_x,mouse_y)}")
+            print( f"test output: {self.rect.collidepoint(mouse_x,mouse_y)}")
 
-            if self.m_rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0]:
+            if self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0]:
+
                 if  self not in selected_node:        
                     selected_node.insert(1,self)
                     del selected_node[3]
