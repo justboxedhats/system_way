@@ -136,8 +136,9 @@ def button(x, y, width, height, text, color=(0, 0, 0), text_color=(255, 255, 255
     pygame.draw.rect(screen, color, (x, y, width, height))
     text_surface = n_font.render(text, True, text_color)
     text_rect = text_surface.get_rect(center=(x + width / 2, y + height / 2))
+    button_rect = pygame.Rect(x,y,width,height)
     screen.blit(text_surface, text_rect)
-    if text_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_just_pressed()[0]:
+    if button_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_just_pressed()[0]:
         if "clicked" not in flags: 
             flags.append("clicked")
         return True
@@ -158,9 +159,6 @@ def load_squares(dic={}):
         #type, x, y,width,hight,color . text,text_color. dragable. code. image
         squ[list(square_id_dic.keys())[I]]=squares(list(square_id_dic.keys())[I],square_id_dic[list(square_id_dic.keys())[I]]["type"],square_id_dic[list(square_id_dic.keys())[I]]["x"]
         , square_id_dic[list(square_id_dic.keys())[I]]["y"],square_id_dic[list(square_id_dic.keys())[I]]["width"],square_id_dic[list(square_id_dic.keys())[I]]["hight"],square_id_dic[list(square_id_dic.keys())[I]]["color"])
-
-        if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="visual":
-            pass
 
         if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="visual":
             pass
@@ -228,7 +226,6 @@ def render_squares ():
         if squ[list(squ.keys())[I]].type == "s_visual":
             squ[list(squ.keys())[I]].draw()
             squ[list(squ.keys())[I]].set_sellectable()      
-
 
         if squ[list(squ.keys())[I]].type == "text":
             squ[list(squ.keys())[I]].draw()
@@ -322,34 +319,14 @@ class squares:
     def draw(self):
         global selected_node ,nodes_dic
 
-        if  "node" in self.type or "s_visual" in self.type : 
-            #self.m_rect=pygame.Rect(self.x+camera_x, self.y+camera_y, int(self.width*zoom), int(self.height*zoom))
-            
+        if  "node" in self.type or "s_visual" in self.type :             
             self.rect=pygame.Rect((self.x+camera_x, self.y+camera_y, self.width, self.height))
   
             if  self.rect.x != nodes_dic[self.name]["x"] and self.rect.y != nodes_dic[self.name]["y"] : 
                 nodes_dic[self.name]["x"]=self.x  
                 nodes_dic[self.name]["y"]=self.y 
-
-
-            """  
-                #the goal is to make a single rect to rule all 
-                #this may require that you set the vaule for the node 
-                #to the vaule of camera x and y 
-                #The issue is that the value for rect can be set repeady
-                #this would cause it's position to move repeadlty 
-                
-                self.x = self.x      (mouse_x - self.width / 2) 
-            self.y = (mouse_y - self.height / 2) 
-            nodes_dic[self.name]["x"]=self.x  
-            nodes_dic[self.name]["y"]=self.y """   
             
             pygame.draw.rect(screen,self.color, self.rect,border_radius=int(self.width/30))
-
-            #print(f" node m_rect:  {self.m_rect}")
-            #gen m_rect: {pygame.rect(self.x+camera_x, self.y+camera_y, self.width, self.height)}
-            print(f" node rect:  {self.rect}     ")
-
             if "im_node" in self.type: # renders node images 
                 print("detected im_node") 
  
@@ -370,8 +347,7 @@ class squares:
         # the first in selected node is for draging node
         global selected_node  
 
-        mouse_x, mouse_y = pygame.mouse.get_pos() 
-        #node_rect=pygame.rect(self.x, self.y, int(self.width*zoom), int(self.height*zoom))
+        mouse_x, mouse_y = pygame.mouse.get_pos()  
         
         if self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0] and selected_node[0]=="":  
             selected_node[0]=self
@@ -418,7 +394,6 @@ class squares:
         if self.code == "":
             print("There was no code to use")
         else:
-            #rect=
             #pygame.draw.rect()
             draw_text(self.code,self.x+text_offset_x, self.y+text_offset_y,self.text_color)
 
@@ -601,7 +576,7 @@ while run_loop:
             flags.clear()
             bg_color=(190,190,180)
             flags.append("workspace")
-            square_clear()
+            square_clear() 
             load_squares(nodes_dic)
 
         if button(per2pix(4), per2pix(79, "s_h"), per2pix(44), per2pix(7,"s_h"), "Settings", (150, 100, 100), (255, 255, 255)):
@@ -786,7 +761,6 @@ while run_loop:
             square_clear()
             load_squares(nodes_dic)
         if "add image" in flags  and selected_node == ["","",""] :
-            #bg_color == 
             # print ( f" selected  lists:  {selected_node}" )
             pass
 
@@ -867,7 +841,6 @@ while run_loop:
 
                      # distroy last item in the list
                     print(f"pre node_dic  {nodes_dic}")
-
         
                 # /\ up   \/ down
 
@@ -885,7 +858,6 @@ while run_loop:
             if image_list != {}: 
                 selected_list=[]
                 img_dis_limit= int(screen.get_height()/150) # need to work on img limit and arrow buttons
-                #print(img_dis_limit)
                 if len(image_list) <= img_dis_limit : # defining selected images
                     selected_list=image_list
                 else:
