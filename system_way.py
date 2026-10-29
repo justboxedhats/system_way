@@ -3,6 +3,8 @@ import pickle
 import os
 from tkinter import *
 from tkinter import filedialog
+#from tkinter as Tk 
+
 pygame.init()
 pygame.font.init()
 clock=pygame.time.Clock()
@@ -11,9 +13,10 @@ pygame.display.set_caption("System Way")
 run_loop = True
 frame_rate=30
 # varrables
-file_name="test_board"
+file_name=""
 board_save={}# a save state of the board
-save_filepath=""
+save_filepath="tesinguf"
+text_filepath=""
 square_count=0
 square_id_dic={}
 squ={}
@@ -93,11 +96,11 @@ def export_board ():
     global save_filepath
     global board_save
     global file_name
-    if os.path.isfile(save_filepath) :
+    if os.path.isfile(save_filepath) : # checks for origanal file 
         with open(save_filepath,'wb') as file:
             pickle.dump(board_save, file)
-    else:
-        print(f" save path: {save_filepath}")
+    else: # makes new file 
+        print(f" save path: {save_filepath} , file name: {file_name}")
         with open(f"{save_filepath}\{file_name}.pkl","wb") as new_file :
             pickle.dump(board_save,new_file)
         save_filepath=f"{save_filepath}\{file_name}.pkl"
@@ -299,7 +302,7 @@ class squares:
     def __init__(self,name,type="visual", x=100, y=100, width=20, height=20, color=(0, 0, 0),text="", text_color=(0, 0, 0), image="", code=""):
         global square_count
         square_count+=1
-        self.name=name
+        self.name=name 
         self.x = x
         self.y = y
         self.image= image
@@ -317,7 +320,7 @@ class squares:
         #print("deleted  square")
 
     def draw(self):
-        global selected_node ,nodes_dic
+        global selected_node ,nodes_dic 
 
         if  "node" in self.type or "s_visual" in self.type :             
             self.rect=pygame.Rect((self.x+camera_x, self.y+camera_y, self.width, self.height))
@@ -367,11 +370,9 @@ class squares:
         if "no_select" not in flags :
             mouse_x, mouse_y = pygame.mouse.get_pos()
 
-            print( f"test output: {self.rect.collidepoint(mouse_x,mouse_y)}")
-
             if self.rect.collidepoint(mouse_x,mouse_y) and pygame.mouse.get_just_pressed()[0]:
 
-                if  self not in selected_node:        
+                if  self not in selected_node:  
                     selected_node.insert(1,self)
                     del selected_node[3]
                 elif self in selected_node:
@@ -479,7 +480,7 @@ while run_loop:
             elif event.key == pygame.K_BACKSPACE:
                 user_type = user_type[:-1]
             else:
-                user_type += event.unicode
+                user_type += event.unicode 
 
             print(user_type)
 
@@ -489,7 +490,22 @@ while run_loop:
     if "home" in flags: #--************
         screen.fill((215, 225, 200)) 
 
+        # home screen rects 
+
+        square_clear()
+
+        home_rec_list={
+            "tital":{"type":"text","x":per2pix(2),"y":8,"width":per2pix(45),"hight":70,"color":(170,190,160,100),"text":"System Way","text_color":(150, 90, 110), "font":"t1" },
+            "ver_bg":{"type":"text","x":per2pix(2),"y":80,"width":per2pix(20),"hight":30,"color":(160, 180, 150),"text":"ver 1.0 (beta)","text_color":(150, 90, 110), "font":"sp1"},
+            "intro_bg":{"type":"text","x":per2pix(3),"y":per2pix(22,"s_h"),"width":per2pix(46),"hight":per2pix(25,"s_h") ,"color":(150, 170, 140),"text":"  Hello, wellcome to system way, a program disigned to help you develop systems and diagrams. ","text_color":(200, 210,255),"font":"t3"},
+            "option_bg":{"type":"visual","x":per2pix(3),"y":per2pix(53,"s_h"),"width":per2pix(46),"hight":per2pix(50,"s_h") ,"color":(150, 170, 140)},
+            "image_bg":{"type":"visual","x":per2pix(55),"y":per2pix(2,"s_h"),"width":per2pix(40),"hight":per2pix(90,"s_h"),"color":(200, 220, 190)},
+            "img_text_bg":{"type":"text","x":per2pix(55),"y":per2pix(2,"s_h"),"width":per2pix(40),"hight":per2pix(6,"s_h"),"color":(160, 180, 150),"text":"list of images","text_color":(150, 90, 110),"font":"sp1"}
+
+        }
+        load_squares(home_rec_list)
         render_squares()
+
 
         #         images in home screen
         if image_list == {}:  
@@ -528,20 +544,23 @@ while run_loop:
                         image=selected_list[I]                    
                     screen.blit(image,(per2pix(72),120*I+per2pix(9,"s_h")))  #+scroll["images"] 
 
-                # buttons for the home screen 
+    # buttons for the home screen
+        
         if button(per2pix(4), per2pix(55,"s_h"), per2pix(44),per2pix(10,"s_h") , "load", (103, 100, 100), (255, 255, 255)):
             draw_text("loading file explorer...",per2pix(50), per2pix(50,"s_h"))
             file_path = open_exp() #'text_files/list_recall.pkl'
             if file_path == "":  
                 print("error detected")
             else:
+                print (f" {file_path}  ,   {file_path.name}")
                 file_path = file_path.name
-                print (file_path)
             #retreaving board data 
             if os.path.exists(file_path):
                 print("detected save file")
-                with open( file_path, "rb") as file:
+                with open(file_path,"rb") as file:
+                    print(file)
                     board_save=pickle.load(file)
+
                 print(board_save)
                 #assining dictionaries 
                 nodes_dic=board_save["nodes_dic"]
@@ -549,13 +568,12 @@ while run_loop:
                 settings=board_save["settings"]
                 pan_speed= settings["pan_speed"]
                 tool_bg_x= settings["tool_bg_x"]
-
+ 
                 flags.clear()
                 bg_color=(180,180,180)
                 flags.append("workspace")
                 square_clear()
-                load_squares(nodes_dic)
-        
+                load_squares(nodes_dic)        
 
 
         if button(per2pix(55), per2pix(92,"s_h"), per2pix(40), per2pix(5,"s_h"), "import image", (140, 100, 100), (255, 255, 255)):            
@@ -620,7 +638,6 @@ while run_loop:
 
         load_connections()
         render_squares()
-        print("new frame")
 
         keys=pygame.key.get_pressed()
         if keys[pygame.K_DOWN]:
@@ -644,11 +661,11 @@ while run_loop:
          
         #----------user tools 
 
-        #---add node
+        #---add node 
         if button(per2pix(40),per2pix(95,"s_h"),per2pix(3),per2pix(3),"new node",(20,130,100),(255,255,255)):
-            print(max(x for x in list(nodes_dic.keys()) if isinstance(x,int)))
+            print(max(x for x in list(nodes_dic.keys()) if isinstance(x,int)))#per2pix(45), per2pix(50,"s_h")
 
-            nodes_dic[max(x for x in list(nodes_dic.keys()) if isinstance(x,int))+1]={"type":"node","x":240,"y":0,"width":100,"hight":100,"color":(94,130,211),"text":"","text_color":(0,0,0),"defualt":"True"}
+            nodes_dic[max(x for x in list(nodes_dic.keys()) if isinstance(x,int))+1]={"type":"node","x":(-1*camera_x)+per2pix(50),"y":(-1*camera_y)+per2pix(50,"s_h"),"width":100,"hight":100,"color":(220,200,211),"text":"","text_color":(0,0,0),"defualt":"True"}
             square_clear()
             load_squares(nodes_dic)
 
@@ -665,7 +682,7 @@ while run_loop:
             connection_dic[selected_node[1].name].append(selected_node[2].name)
             selected_node=["","",""]
             current_tool=""
-            bg_color=(100,100,100)
+            bg_color=(190,190,180)
         elif current_tool=="add line":
             bg_color=(60,70,100)
             draw_text("please select 2 nodes to add link",per2pix(40),per2pix(1,"s_h"),(255,255,255))
@@ -692,7 +709,7 @@ while run_loop:
                     pass
                 selected_node=["","",""]
                 current_tool=""
-                bg_color=(100,100,100)
+                bg_color=(190,190,180)
         elif current_tool=="remove line":
                     bg_color=(100,70,60)
                     draw_text("please select 2 nodes to remove link",per2pix(40),per2pix(1,"s_h"),(255,255,255))
@@ -735,7 +752,7 @@ while run_loop:
             flags.remove("fin_typing")
             flags.remove("no_select")
             current_tool=""
-            bg_color=(100,100,100)
+            bg_color=(190,190,180)
             square_clear()
             load_squares(nodes_dic)
 
@@ -746,7 +763,7 @@ while run_loop:
             flags.remove("end_typing")
             flags.remove("no_select")
             current_tool=""
-            bg_color=(100,100,100)
+            bg_color=(190,190,180)
             square_clear()
             load_squares(nodes_dic)
 
@@ -760,6 +777,9 @@ while run_loop:
 
             square_clear()
             load_squares(nodes_dic)
+
+            # remove node:
+        #if : 
         if "add image" in flags  and selected_node == ["","",""] :
             # print ( f" selected  lists:  {selected_node}" )
             pass
@@ -767,43 +787,79 @@ while run_loop:
             
         if "add image" in flags and selected_node != ["","",""] : 
             #print ( f" selected  lists:  {selected_node}" )
+            pass 
 
-            pass
-                                # side pannel
+
+                                # side pannel (needs simplification and node panel)
         if "code" in flags:
             if button(10, 20, 70, 20, "images", (0, 0, 0), (255, 255, 255)):
                 flags.remove("code")
                 flags.insert(0, "images")
+
+                nodes_dic.pop("code_bg") #chanegs background
+                nodes_dic["image_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (180, 190, 210)}
+                square_clear()
+                load_squares(nodes_dic)
+                print("added image bg 1 ")#ren_text 
+
                 print("images button clicked, changed flags")
             if button(80, 20, 180, 20, "Code", (110, 180, 170), (255, 255, 255)):
                 flags.remove("code")
+
+                if "code_bg" in list(nodes_dic.keys()):
+                    nodes_dic.pop("code_bg")
+                    square_clear()
+                    load_squares(nodes_dic) 
+                
                 print("Code button clicked, changed flags")
 
-            if "image_bg" in list(nodes_dic.keys()):
-                nodes_dic.pop("image_bg")
-                nodes_dic["code_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (10, 18, 12)}
-                print("added code bg 1 ")
-                square_clear()
-                load_squares(nodes_dic)
-            else:
-                nodes_dic["code_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (10, 18, 12)}
-                print("added code bg 2 ")
-                square_clear()
-                load_squares(nodes_dic)   
-            draw_text("coding tab still in development", per2pix(2), per2pix(40,"s_h"),(210,210,130))
-                
+            
+
+            
+            if text_filepath=="" :
+                if button(per2pix(4),per2pix(20,"s_h"),per2pix(20),per2pix(5,"s_h"),"text file",(170,170,160)):
+                    path= open_exp()   
+
+            else: 
+                try :
+                    pass
+                    #renders the text file 
+                except:
+                    if button(per2pix(4),per2pix(20,"s_h"),per2pix(20),per2pix(5,"s_h"),"text file",(170,170,160)):
+                        path= open_exp()   
+                    draw_text("error, file unavailable",per2pix(1),per2pix(40,"s_h"),(255,120,120))
+                    
+
+            # enter the box here  
+            #draw_text("coding tab still in development", per2pix(2), per2pix(40,"s_h"),(210,210,130))
+                            
+                            
+                                # loading ui buttions 
         elif "images" in flags:
 
-                            # loading ui buttions 
+                            
             if button(10, 20, 180, 20, "images", (110, 180, 170), (255, 255, 255)):
                 flags.remove("images")
+
+                if "image_bg" in list(nodes_dic.keys()) :
+                    nodes_dic.pop("image_bg")
+                    square_clear()
+                    load_squares(nodes_dic)
+
                 print("images button clicked, changed flags")
 
             if button(190, 20, 70, 20, "Code", (0, 0, 0), (255, 255, 255)):
                 flags.remove("images")
                 flags.insert(0, "code")
-                print("Code button clicked, changed flags")      
 
+                nodes_dic.pop("image_bg") #chanegs background
+                nodes_dic["code_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (10, 18, 12)}
+                square_clear() 
+                load_squares(nodes_dic)
+
+                print("Code button clicked, changed flags") 
+
+                        #section of code for image side pannel  
                             # button for importing images ----
 
             if button(10,per2pix(95,"s_h"), 200,per2pix(3), "import",(90,160,150),(0,0,0)): 
@@ -811,7 +867,7 @@ while run_loop:
                 #print(f"extend? :    {pygame.image.get_extended()}")
                 if file != "":
                     image_file=pygame.image.load(file.name,".png")#.convert_alpha
-                    image_file= image_file.convert_alpha() 
+                    image_file= image_file.convert_alpha()
                     image_list[len(image_list)]= image_file
 
                 else:
@@ -820,13 +876,10 @@ while run_loop:
                 """if selected_node != "": 
                     nodes_dic[selected_node][type]= "image"          
                     print(f"added image to node : {selected_node}")"""
-                
+
             if "code_bg" in list(nodes_dic.keys()):
-                nodes_dic.pop("code_bg")
-                nodes_dic["image_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (180, 190, 210)}
-                square_clear()
-                load_squares(nodes_dic)
-                #print("added image bg 1 ")
+                pass
+
             else:
                 #print("added image bg 2 ")
                 nodes_dic["image_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (180, 190, 210)}
@@ -847,7 +900,7 @@ while run_loop:
                 if button(per2pix(2),per2pix( 82,"s_h"),per2pix(2),per2pix( 10,"s_h"),"v",(100,180,150),(120,200,121),"t3") and image_display_of+img_dis_limit !=len(image_list)-1 :
                     print(f" image dis: {image_display_of+1}  pressed down img_len : {len(image_list)-1}   ")
 
-                    image_display_of +=1
+                    image_display_of +=1  
 
                     # distroy last item in the list
                     print(f"pre node_dic  {nodes_dic}")
@@ -879,28 +932,26 @@ while run_loop:
                         # options of squares: squares are added each frame
                     screen.blit(selected_list[I],(per2pix(6),120*I+per2pix(9,"s_h")))  #+scroll["images"] 
 
-
             else:
                 draw_text("no images in board",per2pix(2),per2pix(50,"s_h"),(0,0,0),"t3")#(190,160,150)
             
-    
-        else: #when neather of the tabs are selected
+                        #------     when neather of the tabs are selected 
+        else:
             if button(10, 20, tool_bg_x/2, 20, "images", (0, 0, 0), (255, 255, 255)):
                 flags.insert(0,"images")
                 print("images button clicked, changed flags")
+
             if button(10+tool_bg_x/2, 20, tool_bg_x/2, 20, "Code", (0, 0, 0), (255, 255, 255)):
                 flags.insert(0, "code")
-                print("Code button clicked, changed flags")
-            if "code_bg" in list(nodes_dic.keys()):
-                nodes_dic.pop("code_bg")
-                square_clear()
-                load_squares(nodes_dic)
-            elif "image_bg" in list(nodes_dic.keys()) :
-                nodes_dic.pop("image_bg")
-                square_clear()
-                load_squares(nodes_dic)
 
-        """if button(per2pix(90),10,50,3,"export",(100,100,100),(225,225,225)):
+                nodes_dic["code_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (10, 18, 12)}
+                print("added code bg 2 ")  
+                square_clear()
+                load_squares(nodes_dic)    
+
+                print("Code button clicked, changed flags")
+
+        """if button(per2pix(90),10,50,3,"export",(100,100,100),(225,225,225)): 
             print("pressed the import buttion ")
             if file_name == "":
                 # file_name = allow the user to add a name
@@ -910,14 +961,18 @@ while run_loop:
             print(filepath)
             export_board()"""
             
-        if button(per2pix(80),10,50,3,"save",(100,100,100),(225,225,225)):
+        if button(per2pix(80),per2pix(2,"s_h"),per2pix(15),per2pix(4,"s_h"),"save/export",(100,100,100),(225,225,225)):
 
             if save_filepath == "":
                     save_filepath=open_path()
             elif file_name == "" :
+                file_name = filedialog.askopenfilename(
+                title="Select a Text File",
+                filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+                )
                 #runs system to have the user type 
-                #file_name=
-                pass
+                #file_name= 
+                
 
             if save_filepath != "":
                 save_board()
