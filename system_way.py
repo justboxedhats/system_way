@@ -1,4 +1,5 @@
 import pygame
+import sys
 import pickle
 import os
 from tkinter import *
@@ -33,6 +34,9 @@ user_type="" #user text imputs
 scroll={"images":0,"code":0}
 mouse_scroll=0
 scroll_speed=1
+text_scroll_x=0
+text_scroll_y=10
+text_file=None
 text_offset_x=0
 text_offset_y=-20
 camera_x=0
@@ -76,7 +80,6 @@ def open_path():
     else:
             return filepath
 
-
 def save_board():    
     global board_save ,nodes_dic,settings,connection_dic
 
@@ -106,6 +109,38 @@ def export_board ():
         save_filepath=f"{save_filepath}\{file_name}.pkl"
         with open(save_filepath,'wb') as file:
             pickle.dump(board_save, file)
+
+def import_board ():
+
+    file_path = open_exp() #'text_files/list_recall.pkl'
+    if file_path == "":  
+        print("error detected")
+    else:
+        print (f" {file_path}  ,   {file_path.name}")
+        file_path = file_path.name
+    
+    #retreaving board data 
+    if os.path.exists(file_path):
+        print("detected save file")
+        with open(file_path,"rb") as file:
+            print(file)
+            board_save=pickle.load(file)
+
+        print(board_save)
+        #assining dictionaries 
+        # nodes, conenctions, settings, pan speed, 
+        nodes_dic=board_save["nodes_dic"]
+        connection_dic=board_save["connection_dic"]
+        settings=board_save["settings"]
+        pan_speed= settings["pan_speed"]
+        tool_bg_x= settings["tool_bg_x"]
+
+        # clears things for the work space 
+        flags.clear()
+        bg_color=(180,180,180)
+        flags.append("workspace")
+        square_clear()
+        load_squares(nodes_dic)        
 
 def fonts_li (str="df"): #why wont it define the function!!!
         # basic_font = pygame.font.SysFont("Arial", 20)
@@ -437,15 +472,7 @@ class squares:
 
 #"image_bg":{"type":"","x":,"y","width","hight","color","text","text_color"}
  #type, x, y,width,hight,color . text,text_color. dragable. code. image
-home_rec_list={
-    "tital":{"type":"text","x":per2pix(2),"y":8,"width":per2pix(45),"hight":70,"color":(170,190,160,100),"text":"System Way","text_color":(150, 90, 110), "font":"t1" },
-    "ver_bg":{"type":"text","x":per2pix(2),"y":80,"width":per2pix(20),"hight":30,"color":(160, 180, 150),"text":"ver 1.0 (beta)","text_color":(150, 90, 110), "font":"sp1"},
-    "intro_bg":{"type":"text","x":per2pix(3),"y":per2pix(22,"s_h"),"width":per2pix(46),"hight":per2pix(25,"s_h") ,"color":(150, 170, 140),"text":"  Hello, wellcome to system way, a program disigned to help you develop systems and diagrams. ","text_color":(200, 210,255),"font":"t3"},
-    "option_bg":{"type":"visual","x":per2pix(3),"y":per2pix(53,"s_h"),"width":per2pix(46),"hight":per2pix(50,"s_h") ,"color":(150, 170, 140)},
-    "image_bg":{"type":"visual","x":per2pix(55),"y":per2pix(2,"s_h"),"width":per2pix(40),"hight":per2pix(90,"s_h"),"color":(200, 220, 190)},
-    "img_text_bg":{"type":"text","x":per2pix(55),"y":per2pix(2,"s_h"),"width":per2pix(40),"hight":per2pix(6,"s_h"),"color":(160, 180, 150),"text":"list of images","text_color":(150, 90, 110),"font":"sp1"}
-
-    }
+home_rec_list={}
 load_squares(home_rec_list)
 render_squares()
 
@@ -454,14 +481,15 @@ nodes_dic["tool_bar_bg"]={"type":"visual", "x":per2pix(35),"y":per2pix(94,"s_h")
 
 while run_loop:
 
-    for event in pygame.event.get():
+    #events=pygame.event.get()
+    for event in pygame.event.get() :
         if event.type == pygame.QUIT:
             run_loop = False
-        """if event.type == pygame.MOUSEWHEEL:
+        if event.type == pygame.MOUSEWHEEL:
             mouse_scroll=event.y
             print(event.y)
         else:
-            mouse_scroll=0"""
+            mouse_scroll=0
         if event.type == pygame.KEYDOWN and "type_t_f" in flags:
             if event.key == pygame.K_RETURN:
                 flags.remove("typing_t_f")
@@ -548,33 +576,8 @@ while run_loop:
         
         if button(per2pix(4), per2pix(55,"s_h"), per2pix(44),per2pix(10,"s_h") , "load", (103, 100, 100), (255, 255, 255)):
             draw_text("loading file explorer...",per2pix(50), per2pix(50,"s_h"))
-            file_path = open_exp() #'text_files/list_recall.pkl'
-            if file_path == "":  
-                print("error detected")
-            else:
-                print (f" {file_path}  ,   {file_path.name}")
-                file_path = file_path.name
-            #retreaving board data 
-            if os.path.exists(file_path):
-                print("detected save file")
-                with open(file_path,"rb") as file:
-                    print(file)
-                    board_save=pickle.load(file)
-
-                print(board_save)
-                #assining dictionaries 
-                nodes_dic=board_save["nodes_dic"]
-                connection_dic=board_save["connection_dic"]
-                settings=board_save["settings"]
-                pan_speed= settings["pan_speed"]
-                tool_bg_x= settings["tool_bg_x"]
- 
-                flags.clear()
-                bg_color=(180,180,180)
-                flags.append("workspace")
-                square_clear()
-                load_squares(nodes_dic)        
-
+            
+            import_board() 
 
         if button(per2pix(55), per2pix(92,"s_h"), per2pix(40), per2pix(5,"s_h"), "import image", (140, 100, 100), (255, 255, 255)):            
             file=open_exp()
@@ -594,7 +597,7 @@ while run_loop:
             flags.clear()
             bg_color=(190,190,180)
             flags.append("workspace")
-            square_clear() 
+            square_clear()
             load_squares(nodes_dic)
 
         if button(per2pix(4), per2pix(79, "s_h"), per2pix(44), per2pix(7,"s_h"), "Settings", (150, 100, 100), (255, 255, 255)):
@@ -606,7 +609,7 @@ while run_loop:
 
         
 
-    if "load" in flags: #--************
+    if "load" in flags: #--************ 
         screen.fill((200, 200, 200))
         draw_text("Load", 10, 10, (0, 0, 0))
         if button(10, 10, 100, 30, "Home", (100, 100, 100), (255, 255, 255)) or pygame.mouse.get_just_pressed()[1]:
@@ -816,21 +819,42 @@ while run_loop:
             
 
             
-            if text_filepath=="" :
+            if text_filepath=="":
                 if button(per2pix(4),per2pix(20,"s_h"),per2pix(20),per2pix(5,"s_h"),"text file",(170,170,160)):
-                    path= open_exp()   
-
+                    text_filepath= open_exp()   
+                print(f"filepath:  {text_filepath} ")
             else: 
+                #print(f"n_filepath:  {text_filepath.name}")
                 try :
-                    pass
-                    #renders the text file 
-                except:
+                    textbox_rect=pygame.rect.Rect(per2pix(2),per2pix(7,"s_h"),per2pix(29),per2pix(80,"s_h"))
+                    textbox_surf= screen.subsurface(textbox_rect)
+                    if mouse_scroll != 0 and keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+                        text_scroll_x-=mouse_scroll*10
+                        print(f"text scroll x :  {text_scroll_x}")
+                    elif mouse_scroll != 0 :
+                        text_scroll_y-=mouse_scroll*7
+                        print(f"text scroll y :  {text_scroll_y} , mouse scoll: {mouse_scroll}")
+
+                    line_idex=0
+                    with open(text_filepath.name, "r", encoding="utf-8") as file:
+                        #lines = [line.strip() for line in file.readlines()]
+                        #lines =file.readlines()
+                        # print(f"lines; {lines}")
+                        for line in file : 
+                            #print(line,end="")
+                            text_surf=fonts_li().render(str(line), True, (255,255,255))
+                            textbox_surf.blit(text_surf,(text_scroll_x,text_scroll_y+(20*line_idex)))
+                            line_idex+=1
+
+                    if button(per2pix(4),per2pix(90,"s_h"),per2pix(20),per2pix(5,"s_h"),"text file",(170,170,160)):
+                        path= open_exp()
+                except Exception as e:
+                    print(f"error:  {e}") 
                     if button(per2pix(4),per2pix(20,"s_h"),per2pix(20),per2pix(5,"s_h"),"text file",(170,170,160)):
                         path= open_exp()   
                     draw_text("error, file unavailable",per2pix(1),per2pix(40,"s_h"),(255,120,120))
-                    
+                   
 
-            # enter the box here  
             #draw_text("coding tab still in development", per2pix(2), per2pix(40,"s_h"),(210,210,130))
                             
                             
@@ -911,7 +935,7 @@ while run_loop:
             if image_list != {}: 
                 selected_list=[]
                 img_dis_limit= int(screen.get_height()/150) # need to work on img limit and arrow buttons
-                if len(image_list) <= img_dis_limit : # defining selected images
+                if len(image_list) <= img_dis_limit : # defining images to render
                     selected_list=image_list
                 else:
                     for i in range(img_dis_limit):
@@ -935,6 +959,8 @@ while run_loop:
             else:
                 draw_text("no images in board",per2pix(2),per2pix(50,"s_h"),(0,0,0),"t3")#(190,160,150)
             
+
+
                         #------     when neather of the tabs are selected 
         else:
             if button(10, 20, tool_bg_x/2, 20, "images", (0, 0, 0), (255, 255, 255)):
@@ -972,8 +998,6 @@ while run_loop:
                 )
                 #runs system to have the user type 
                 #file_name= 
-                
-
             if save_filepath != "":
                 save_board()
                 export_board()
