@@ -1,14 +1,17 @@
 import pygame
-import sys
 import pickle
 import os
+import tkinter as tk
 from tkinter import *
 from tkinter import filedialog
+from tkinter import simpledialog
 #from tkinter as Tk 
 
 pygame.init()
 pygame.font.init()
 clock=pygame.time.Clock()
+root = tk.Tk()
+root.withdraw()
 screen = pygame.display.set_mode((800, 600),pygame.RESIZABLE)
 pygame.display.set_caption("System Way")
 run_loop = True
@@ -191,6 +194,14 @@ def draw_text(text, x, y, color=(0, 0, 0),font="df"):
     text_surface = n_font.render(text, True, color)
     screen.blit(text_surface, (x, y))
 
+def load_image(img_item,pos=(100,100)):
+    if img_item.get_width()>100 or img_item.get_height() > 100 :
+        image=pygame.transform.scale(img_item,(100,100))
+    else: 
+        image=img_item                    
+    screen.blit(image,pos)  #+scroll["images"] 
+
+
 def load_squares(dic={}):
     square_id_dic=dic
     for I in range(len(square_id_dic)):
@@ -247,9 +258,31 @@ def load_squares(dic={}):
             squ[list(square_id_dic.keys())[I]].text=square_id_dic[list(square_id_dic.keys())[I]]["text"]
             squ[list(square_id_dic.keys())[I]].text_color=square_id_dic[list(square_id_dic.keys())[I]]["text_color"]
 
-        
-            # dragable
-            # image
+            if "font" in square_id_dic[list(square_id_dic.keys())[I]] :
+                squ[list(square_id_dic.keys())[I]].font=square_id_dic[list(square_id_dic.keys())[I]]["font"]
+            else: 
+                square_id_dic[list(square_id_dic.keys())[I]]["font"]="df"
+                squ[list(square_id_dic.keys())[I]].font=square_id_dic[list(square_id_dic.keys())[I]]["font"]
+
+            if "dragable" in square_id_dic[list(square_id_dic.keys())[I]] :
+                squ[list(square_id_dic.keys())[I]].dragable=square_id_dic[list(square_id_dic.keys())[I]]["dragable"]
+            
+            if "sellectable" in square_id_dic[list(square_id_dic.keys())[I]] :
+                squ[list(square_id_dic.keys())[I]].sellectable=square_id_dic[list(square_id_dic.keys())[I]]["sellectable"]
+
+            if "defualt" in square_id_dic[list(square_id_dic.keys())[I]] : # dragable,sellectable,click_b,
+                square_id_dic[list(square_id_dic.keys())[I]]["dragable"]="True"
+                square_id_dic[list(square_id_dic.keys())[I]]["sellectable"]="True"
+                square_id_dic[list(square_id_dic.keys())[I]]["re_resize"]="True"
+
+                squ[list(square_id_dic.keys())[I]].dragable=square_id_dic[list(square_id_dic.keys())[I]]["dragable"]
+                squ[list(square_id_dic.keys())[I]].sellectable=square_id_dic[list(square_id_dic.keys())[I]]["sellectable"]
+                squ[list(square_id_dic.keys())[I]].re_resize=square_id_dic[list(square_id_dic.keys())[I]]["re_resize"]
+
+            if "image" in square_id_dic[list(square_id_dic.keys())[I]]:
+                square_id_dic[list(square_id_dic.keys())[I]]["image"]="True"
+                squ[list(square_id_dic.keys())[I]].image=square_id_dic[list(square_id_dic.keys())[I]]["image"]
+            
 
         #squ[list(square_id_dic.keys())[I]].click_b=square_id_dic[list(square_id_dic.keys())[I]]["click_b"]
         
@@ -293,6 +326,14 @@ def render_squares ():
         if squ[list(squ.keys())[I]].type == "im_node":
             squ[list(squ.keys())[I]].draw()
             squ[list(squ.keys())[I]].draw_text(squ[list(squ.keys())[I]].text,squ[list(squ.keys())[I]].x+camera_x,squ[list(squ.keys())[I]].y+camera_y-per2pix(.7,squ[list(squ.keys())[I]].height),squ[list(squ.keys())[I]].text_color)
+            try:
+                if squ[list(squ.keys())[I]].sellectable== "True":
+                    squ[list(squ.keys())[I]].set_sellectable()      
+            except:pass
+            try : 
+                if squ[list(squ.keys())[I]].dragable == "True":
+                    squ[list(squ.keys())[I]].set_dragable(list(squ.keys())[I])
+            except:pass
             #self.add_image()
             #self.dragrable()
 
@@ -535,20 +576,20 @@ while run_loop:
         render_squares()
 
 
-        #         images in home screen
+        #----------------  images in home screen
         if image_list == {}:  
             draw_text("currenty without images",per2pix(57),per2pix(50,"s_h"),(102,30,50),"t3")
 
         else: 
             if image_list != [] and len(image_list) > img_dis_limit: # arrow check
-                if button(per2pix(78),per2pix( 12,"s_h"),per2pix(2),per2pix( 10,"s_h"),"^",(100,180,150),(120,200,121),"t3") and image_display_of !=0:
+                if button(per2pix(87),per2pix( 12,"s_h"),per2pix(2),per2pix( 10,"s_h"),"^",(100,180,150),(120,200,121),"t3") and image_display_of !=0:
                     image_display_of -=1 
 
                 # distroy last square 
         
                 # /\ up   \/ down
 
-                if button(per2pix(78),per2pix( 82,"s_h"),per2pix(2),per2pix( 10,"s_h"),"v",(100,180,150),(120,200,121),"t3") and image_display_of+img_dis_limit !=len(image_list)-1 :
+                if button(per2pix(87),per2pix( 82,"s_h"),per2pix(2),per2pix( 10,"s_h"),"v",(100,180,150),(120,200,121),"t3") and image_display_of+img_dis_limit !=len(image_list)-1 :
                     print(f" image dis: {image_display_of+1}  pressed down img_len : {len(image_list)-1}   ")
                     image_display_of +=1
 
@@ -566,18 +607,14 @@ while run_loop:
                         selected_list.append(image_list[int(i+image_display_of)])
                         
                 for I in range(len(selected_list)): # srinks and renders
-                    if selected_list[I].get_width()>100 or selected_list[I].get_height() > 100 :
-                        image=pygame.transform.scale(selected_list[I],(100,100))
-                    else: 
-                        image=selected_list[I]                    
-                    screen.blit(image,(per2pix(72),120*I+per2pix(9,"s_h")))  #+scroll["images"] 
+                    load_image(selected_list[I],(per2pix(72),120*I+per2pix(9,"s_h")))
 
-    # buttons for the home screen
+    #       --------------buttons for the home screen
         
         if button(per2pix(4), per2pix(55,"s_h"), per2pix(44),per2pix(10,"s_h") , "load", (103, 100, 100), (255, 255, 255)):
             draw_text("loading file explorer...",per2pix(50), per2pix(50,"s_h"))
             
-            import_board() 
+            import_board()
 
         if button(per2pix(55), per2pix(92,"s_h"), per2pix(40), per2pix(5,"s_h"), "import image", (140, 100, 100), (255, 255, 255)):            
             file=open_exp()
@@ -672,8 +709,51 @@ while run_loop:
             square_clear()
             load_squares(nodes_dic)
 
+        #--------- remove node 
+
+        if button(per2pix(50),per2pix(95,"s_h"),per2pix(3),per2pix(3),"delete node",(220,130,100),(255,255,255)):
+            print(max(x for x in list(nodes_dic.keys()) if isinstance(x,int)))
+            selected_node=["","",""]
+            current_tool="remove node"
+            
+        if current_tool == "remove node" and selected_node[1]!="": 
+            print (f"selected node:  {selected_node}")
+            print(f"name: {selected_node[1].name}")
+            del_list=[]
+            # delete connections 
+
+            if selected_node[1].name in connection_dic:
+                del connection_dic[selected_node[1].name]
+            print(connection_dic)
+            for i in connection_dic.keys():
+                print(f"i :  { i }")
+                if selected_node[1].name in connection_dic[i]:
+                    print(f"{selected_node[1].name}  in  {connection_dic[i]}")
+                    connection_dic[i]=connection_dic[i].remove(selected_node[1].name)
+                    print(f"changed:   {connection_dic}")
+                if connection_dic[i] == None:
+                    del_list.append(i)
+            for i in del_list:
+                del connection_dic[i]
+            
+            #del connection_dic.items
+
+            del nodes_dic[selected_node[1].name]
+
+            # reset 
+            square_clear()
+            load_squares(nodes_dic)
+            selected_node=["","",""]
+            current_tool=""
+            bg_color=(190,190,180)
+        elif current_tool == "remove node":
+            bg_color=(250,180,210)
+            draw_text("select node to delete. esc to cancel",per2pix(30),per2pix(10,"s_h"),(120,200,200))
+
+
+
         #---add lines
-        if button(per2pix(50),per2pix(95,"s_h"),per2pix(3),per2pix(3),"new line",(60,100,140),(255,255,255)):
+        if button(per2pix(60),per2pix(95,"s_h"),per2pix(3),per2pix(3),"new line",(60,100,140),(255,255,255)):
             selected_node=["","",""]
             current_tool="add line"
         if selected_node[1]!="" and selected_node[2] !="" and current_tool == "add line":
@@ -691,7 +771,7 @@ while run_loop:
             draw_text("please select 2 nodes to add link",per2pix(40),per2pix(1,"s_h"),(255,255,255))
 
             #-----------------Remove line
-        if button(per2pix(60),per2pix(95,"s_h"),per2pix(3),per2pix(3),"remove line",(140,100,60),(255,255,255)):
+        if button(per2pix(70),per2pix(95,"s_h"),per2pix(3),per2pix(3),"remove line",(140,100,60),(255,255,255)):
             selected_node=["","",""]
             current_tool="remove line"
 
@@ -718,7 +798,7 @@ while run_loop:
                     draw_text("please select 2 nodes to remove link",per2pix(40),per2pix(1,"s_h"),(255,255,255))
 
             #----------edit text 
-        if button(per2pix(70),per2pix(95,"s_h"),per2pix(3),per2pix(3),"text",(130,104,50),(255,255,255)):
+        if button(per2pix(80),per2pix(95,"s_h"),per2pix(3),per2pix(3),"text",(130,104,50),(255,255,255)):
             selected_node=["","",""]
             current_tool="edit_text"
             flags.append("typing")
@@ -772,7 +852,7 @@ while run_loop:
 
 
                         #---------add image
-        if button(per2pix(80),per2pix(95,"s_h"),per2pix(3),per2pix(3),"image",(190,210,40),(255,255,255)):
+        if button(per2pix(90),per2pix(95,"s_h"),per2pix(3),per2pix(3),"image",(190,210,40),(255,255,255)):
             print(max(x for x in list(nodes_dic.keys()) if isinstance(x,int)))
             selected_node=["","",""] 
             current_tool="add image" 
@@ -793,7 +873,7 @@ while run_loop:
             pass 
 
 
-                                # side pannel (needs simplification and node panel)
+                # side pannel (needs simplification and node panel)
         if "code" in flags:
             if button(10, 20, 70, 20, "images", (0, 0, 0), (255, 255, 255)):
                 flags.remove("code")
@@ -921,7 +1001,7 @@ while run_loop:
         
                 # /\ up   \/ down
 
-                if button(per2pix(2),per2pix( 82,"s_h"),per2pix(2),per2pix( 10,"s_h"),"v",(100,180,150),(120,200,121),"t3") and image_display_of+img_dis_limit !=len(image_list)-1 :
+                if button(per2pix(2),per2pix( 82,"s_h"),per2pix(2),per2pix( 10,"s_h"),"v",(100,180,150),(120,200,121),"t3") and image_display_of+img_dis_limit <len(image_list) :
                     print(f" image dis: {image_display_of+1}  pressed down img_len : {len(image_list)-1}   ")
 
                     image_display_of +=1  
@@ -933,7 +1013,7 @@ while run_loop:
                                         #load images 
 
             if image_list != {}: 
-                selected_list=[]
+                selected_list=[]#per2pix(15,"s_h")
                 img_dis_limit= int(screen.get_height()/150) # need to work on img limit and arrow buttons
                 if len(image_list) <= img_dis_limit : # defining images to render
                     selected_list=image_list
@@ -948,13 +1028,13 @@ while run_loop:
                         image=pygame.transform.scale(selected_list[I],(100,100))
         
                     if selected_list[I] not in nodes_dic.keys():
-                        # adds image background
-                        print(f" pre node_dic: {nodes_dic}  input vaule : {str(selected_list[I])}")
-                        nodes_dic[str(selected_list[I])]={"type":"s_visual","x": per2pix(6)-(20/selected_list[I].get_width()) ,"y":120*I+per2pix(9,"s_h")-(20/selected_list[I].get_height()) , "width" : selected_list[I].get_width() +(4/selected_list[I].get_width()), "hight": selected_list[I].get_height() + (4/selected_list[I].get_height()), "color":(10,50,100,79) } 
-                        print(f" post edit node_dic {nodes_dic} ")
-
+                        # adds image node 
+                        #print(f" pre node_dic: {nodes_dic}  input vaule : {str(selected_list[I])}")
+                        nodes_dic[str(selected_list[I])]={"type":"s_visual","x": per2pix(6)-(20/selected_list[I].get_width()) ,"y":120*I+per2pix(9,"s_h")-(20/selected_list[I].get_height()) , "width" : image.get_width() +(4/selected_list[I].get_width()), "hight": image.get_height() + (4/selected_list[I].get_height()), "color":(10,50,100,79) } 
+                        #print(f" post edit node_dic {nodes_dic} ")
+ 
                         # options of squares: squares are added each frame
-                    screen.blit(selected_list[I],(per2pix(6),120*I+per2pix(9,"s_h")))  #+scroll["images"] 
+                    load_image(selected_list[I],(per2pix(6),120*I+per2pix(9,"s_h")))
 
             else:
                 draw_text("no images in board",per2pix(2),per2pix(50,"s_h"),(0,0,0),"t3")#(190,160,150)
@@ -987,22 +1067,38 @@ while run_loop:
             print(filepath)
             export_board()"""
             
-        if button(per2pix(80),per2pix(2,"s_h"),per2pix(15),per2pix(4,"s_h"),"save/export",(100,100,100),(225,225,225)):
+        if button(per2pix(84),per2pix(2,"s_h"),per2pix(8),per2pix(4,"s_h"),"save",(100,100,100),(225,225,225)):
 
-            if save_filepath == "":
-                    save_filepath=open_path()
-            elif file_name == "" :
-                file_name = filedialog.askopenfilename(
-                title="Select a Text File",
-                filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
-                )
-                #runs system to have the user type 
-                #file_name= 
-            if save_filepath != "":
+            
+            save_filepath=open_exp()
+            save_filepath=save_filepath.name
+
+            print(f"filepath: {save_filepath}")
+            
+            for t in reversed(save_filepath):
+                if t != "/":
+                    file_name = f"{t+file_name}"
+                else:
+                    break
+            print(f"filename: {file_name}")
+                
+            if save_filepath != "" and file_name != "":
                 save_board()
                 export_board()
+            else: 
+                print(f"error, filepath: {save_filepath} , file_name: {file_name}")
 
-            print(f"attempted to create file")
+
+        if button(per2pix(74),per2pix(2,"s_h"),per2pix(8),per2pix(4,"s_h"),"export",(100,100,100),(225,225,225)):
+            
+
+            save_filepath=open_path()
+
+            file_name = simpledialog.askstring("Input Request", "Please enter your file name:",) 
+
+            if save_filepath != "":
+                save_board()
+                export_board() 
 
             # mouse pan system
         if pygame.mouse.get_just_pressed()[0]  and "clicked" not in  flags and "mouse_pan" not in flags:
