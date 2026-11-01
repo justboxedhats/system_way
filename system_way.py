@@ -56,8 +56,9 @@ nodes_dic = {1: {"type":"node","text": "get bread","x":100,"y":100, "width":100,
              2: {"type":"node","text": "get jam and then get the knife that will be used to evenly spread the jam ontop of the bread/toast(yay)","x":300,"y":200, "width":100,"hight":100, "color": (200, 255, 200),"text_color":(0,0,0),"dragable":"True","sellectable":"True"},
              3: {"type":"node","text": "toast","x":500,"y":400, "width":100,"hight":100,  "color": (200, 200, 255),"text_color":(0,0,0),"dragable":"True","sellectable":"True"},
              4: {"type":"node","text": "image","x":600,"y":200, "width":100,"hight":100,  "color": (140, 200, 255),"text_color":(0,0,0),"dragable":"True","sellectable":"True"},
+             5: {"type":"img_node","x":488,"y":-100,"width":100,"hight":100,"color":(34,123,255),"defualt":"True"}#"image":"image"
             } 
-
+#nodes_dic[) if isinstance(x,int))+1]={"type":"node","x":(-1*camera_x)+per2pix(50),"y":(-1*camera_y)+per2pix(50,"s_h"),"width":100,"hight":100,"color":(220,200,211),"text":"","text_color":(0,0,0),"defualt":"True"}
 connection_dic = {1: [2], 2: [3]}
 
 # -------------    Fuctions
@@ -255,14 +256,9 @@ def load_squares(dic={}):
             # Code
 
         if square_id_dic[list(square_id_dic.keys())[I]]["type"] =="img_node":
-            squ[list(square_id_dic.keys())[I]].text=square_id_dic[list(square_id_dic.keys())[I]]["text"]
-            squ[list(square_id_dic.keys())[I]].text_color=square_id_dic[list(square_id_dic.keys())[I]]["text_color"]
-
-            if "font" in square_id_dic[list(square_id_dic.keys())[I]] :
-                squ[list(square_id_dic.keys())[I]].font=square_id_dic[list(square_id_dic.keys())[I]]["font"]
-            else: 
-                square_id_dic[list(square_id_dic.keys())[I]]["font"]="df"
-                squ[list(square_id_dic.keys())[I]].font=square_id_dic[list(square_id_dic.keys())[I]]["font"]
+            if "image" in square_id_dic[list(square_id_dic.keys())[I]]:
+                square_id_dic[list(square_id_dic.keys())[I]]["image"]="True"
+                squ[list(square_id_dic.keys())[I]].image=square_id_dic[list(square_id_dic.keys())[I]]["image"]
 
             if "dragable" in square_id_dic[list(square_id_dic.keys())[I]] :
                 squ[list(square_id_dic.keys())[I]].dragable=square_id_dic[list(square_id_dic.keys())[I]]["dragable"]
@@ -274,14 +270,13 @@ def load_squares(dic={}):
                 square_id_dic[list(square_id_dic.keys())[I]]["dragable"]="True"
                 square_id_dic[list(square_id_dic.keys())[I]]["sellectable"]="True"
                 square_id_dic[list(square_id_dic.keys())[I]]["re_resize"]="True"
+                print("here")
 
                 squ[list(square_id_dic.keys())[I]].dragable=square_id_dic[list(square_id_dic.keys())[I]]["dragable"]
                 squ[list(square_id_dic.keys())[I]].sellectable=square_id_dic[list(square_id_dic.keys())[I]]["sellectable"]
                 squ[list(square_id_dic.keys())[I]].re_resize=square_id_dic[list(square_id_dic.keys())[I]]["re_resize"]
 
-            if "image" in square_id_dic[list(square_id_dic.keys())[I]]:
-                square_id_dic[list(square_id_dic.keys())[I]]["image"]="True"
-                squ[list(square_id_dic.keys())[I]].image=square_id_dic[list(square_id_dic.keys())[I]]["image"]
+
             
 
         #squ[list(square_id_dic.keys())[I]].click_b=square_id_dic[list(square_id_dic.keys())[I]]["click_b"]
@@ -323,9 +318,8 @@ def render_squares ():
             squ[list(squ.keys())[I]].draw_text(squ[list(squ.keys())[I]].text,squ[list(squ.keys())[I]].x+camera_x,squ[list(squ.keys())[I]].y+camera_y, squ[list(squ.keys())[I]].text_color)
             squ[list(squ.keys())[I]].add_code()
 
-        if squ[list(squ.keys())[I]].type == "im_node":
+        if squ[list(squ.keys())[I]].type == "img_node":
             squ[list(squ.keys())[I]].draw()
-            squ[list(squ.keys())[I]].draw_text(squ[list(squ.keys())[I]].text,squ[list(squ.keys())[I]].x+camera_x,squ[list(squ.keys())[I]].y+camera_y-per2pix(.7,squ[list(squ.keys())[I]].height),squ[list(squ.keys())[I]].text_color)
             try:
                 if squ[list(squ.keys())[I]].sellectable== "True":
                     squ[list(squ.keys())[I]].set_sellectable()      
@@ -564,13 +558,12 @@ while run_loop:
         square_clear()
 
         home_rec_list={
-            "tital":{"type":"text","x":per2pix(2),"y":8,"width":per2pix(45),"hight":70,"color":(170,190,160,100),"text":"System Way","text_color":(150, 90, 110), "font":"t1" },
+            "tital":{"type":"text","x":per2pix(2),"y":8,"width":per2pix(45),"hight":70,"color":(170,190,160,100),"text":"System Way","text_color":(150, 90, 110), "font":"t1" }, 
             "ver_bg":{"type":"text","x":per2pix(2),"y":80,"width":per2pix(20),"hight":30,"color":(160, 180, 150),"text":"ver 1.0 (beta)","text_color":(150, 90, 110), "font":"sp1"},
             "intro_bg":{"type":"text","x":per2pix(3),"y":per2pix(22,"s_h"),"width":per2pix(46),"hight":per2pix(25,"s_h") ,"color":(150, 170, 140),"text":"  Hello, wellcome to system way, a program disigned to help you develop systems and diagrams. ","text_color":(200, 210,255),"font":"t3"},
             "option_bg":{"type":"visual","x":per2pix(3),"y":per2pix(53,"s_h"),"width":per2pix(46),"hight":per2pix(50,"s_h") ,"color":(150, 170, 140)},
             "image_bg":{"type":"visual","x":per2pix(55),"y":per2pix(2,"s_h"),"width":per2pix(40),"hight":per2pix(90,"s_h"),"color":(200, 220, 190)},
             "img_text_bg":{"type":"text","x":per2pix(55),"y":per2pix(2,"s_h"),"width":per2pix(40),"hight":per2pix(6,"s_h"),"color":(160, 180, 150),"text":"list of images","text_color":(150, 90, 110),"font":"sp1"}
-
         }
         load_squares(home_rec_list)
         render_squares()
@@ -748,7 +741,7 @@ while run_loop:
             bg_color=(190,190,180)
         elif current_tool == "remove node":
             bg_color=(250,180,210)
-            draw_text("select node to delete. esc to cancel",per2pix(30),per2pix(10,"s_h"),(120,200,200))
+            draw_text("select node to delete.",per2pix(30),per2pix(10,"s_h"),(120,200,200))
 
 
 
@@ -851,29 +844,8 @@ while run_loop:
             load_squares(nodes_dic)
 
 
-                        #---------add image
-        if button(per2pix(90),per2pix(95,"s_h"),per2pix(3),per2pix(3),"image",(190,210,40),(255,255,255)):
-            print(max(x for x in list(nodes_dic.keys()) if isinstance(x,int)))
-            selected_node=["","",""] 
-            current_tool="add image" 
-            nodes_dic[max(x for x in list(nodes_dic.keys()) if isinstance(x,int))+1]={"type":"node","x":240,"y":0,"width":100,"hight":100,"color":(94,130,211),"text":"","text_color":(0,0,0),"defualt":"True"}
+                    # -------------- code pannel
 
-            square_clear()
-            load_squares(nodes_dic)
-
-            # remove node:
-        #if : 
-        if "add image" in flags  and selected_node == ["","",""] :
-            # print ( f" selected  lists:  {selected_node}" )
-            pass
-
-            
-        if "add image" in flags and selected_node != ["","",""] : 
-            #print ( f" selected  lists:  {selected_node}" )
-            pass 
-
-
-                # side pannel (needs simplification and node panel)
         if "code" in flags:
             if button(10, 20, 70, 20, "images", (0, 0, 0), (255, 255, 255)):
                 flags.remove("code")
@@ -886,7 +858,7 @@ while run_loop:
                 print("added image bg 1 ")#ren_text 
 
                 print("images button clicked, changed flags")
-            if button(80, 20, 180, 20, "Code", (110, 180, 170), (255, 255, 255)):
+            if button(80, 20, 180, 20, "Text", (110, 180, 170), (255, 255, 255)):
                 flags.remove("code")
 
                 if "code_bg" in list(nodes_dic.keys()):
@@ -940,7 +912,6 @@ while run_loop:
                             
                                 # loading ui buttions 
         elif "images" in flags:
-
                             
             if button(10, 20, 180, 20, "images", (110, 180, 170), (255, 255, 255)):
                 flags.remove("images")
@@ -952,7 +923,7 @@ while run_loop:
 
                 print("images button clicked, changed flags")
 
-            if button(190, 20, 70, 20, "Code", (0, 0, 0), (255, 255, 255)):
+            if button(190, 20, 70, 20, "Text", (0, 0, 0), (255, 255, 255)):
                 flags.remove("images")
                 flags.insert(0, "code")
 
@@ -1047,7 +1018,7 @@ while run_loop:
                 flags.insert(0,"images")
                 print("images button clicked, changed flags")
 
-            if button(10+tool_bg_x/2, 20, tool_bg_x/2, 20, "Code", (0, 0, 0), (255, 255, 255)):
+            if button(10+tool_bg_x/2, 20, tool_bg_x/2, 20, "Text", (0, 0, 0), (255, 255, 255)):
                 flags.insert(0, "code")
 
                 nodes_dic["code_bg"]={"type":"visual","x":10,"y":40,"width":tool_bg_x,"hight":600,"color": (10, 18, 12)}
